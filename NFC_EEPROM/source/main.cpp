@@ -31,10 +31,10 @@ using mbed::Span;
 
 using mbed::nfc::ndef::MessageBuilder;
 using mbed::nfc::ndef::common::URI;
-using mbed::nfc::ndef::common::span_from_cstr();
+using mbed::nfc::ndef::common::span_from_cstr;
 
 /* URL that will be written into the tag */
-const uint8_t url_string[] = "mbed.com";
+const char url_string[] = "mbed.com";
 
 class EEPROMExample : mbed::nfc::NFCEEPROM::Delegate
 {
