@@ -20,7 +20,6 @@
 #include "nfc/ndef/common/URI.h"
 #include "nfc/ndef/common/util.h"
 
-#include "m24sr_driver.h"
 #include "NFCEEPROM.h"
 
 using events::EventQueue;
@@ -32,6 +31,39 @@ using mbed::Span;
 using mbed::nfc::ndef::MessageBuilder;
 using mbed::nfc::ndef::common::URI;
 using mbed::nfc::ndef::common::span_from_cstr;
+
+#if 0
+#include "m24sr_driver.h"
+
+NFCEEPROMDriver& get_eeprom_driver(EventQueue&) {
+    static mbed::nfc::vendor::ST::M24srDriver eeprom_driver;
+    return eeprom_driver;
+}
+
+#else
+
+#include "nfc/NFCController.h"
+#include "NfcController2EepromAdapter.h"
+#include "nfc/controllers/PN512Driver.h"
+#include "nfc/controllers/PN512SPITransportDriver.h"
+
+using mbed::nfc::Controller2EepromDriverAdapter;
+using mbed::nfc::NFCController;
+
+NFCEEPROMDriver& get_eeprom_driver(EventQueue& queue) {
+    static uint8_t ndef_controller_buffer[1024] = { 0 };
+    static uint8_t eeprom_buffer[1024] = { 0 };
+
+    static mbed::nfc::PN512SPITransportDriver pn512_transport(D11, D12, D13, D10, A1, A0);
+    static mbed::nfc::PN512Driver pn512_driver(&pn512_transport);
+
+    static NFCController nfc_controller(&pn512_driver, &queue, ndef_controller_buffer);
+    static Controller2EepromDriverAdapter eeprom_driver(nfc_controller, eeprom_buffer);
+    return eeprom_driver;
+}
+
+#endif
+
 
 /* URL that will be written into the tag */
 const char url_string[] = "mbed.com";
@@ -104,10 +136,9 @@ private:
 
 int main()
 {
-    mbed::nfc::vendor::ST::M24srDriver eeprom_driver;
     EventQueue queue;
 
-    EEPROMExample example(queue, eeprom_driver);
+    EEPROMExample example(queue, get_eeprom_driver(queue));
     example.run();
 
     queue.dispatch_forever();
