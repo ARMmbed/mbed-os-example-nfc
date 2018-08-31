@@ -18,6 +18,7 @@
 
 #include "nfc/ndef/MessageBuilder.h"
 #include "nfc/ndef/common/URI.h"
+#include "nfc/ndef/common/util.h"
 
 #include "m24sr_driver.h"
 #include "NFCEEPROM.h"
@@ -30,6 +31,7 @@ using mbed::Span;
 
 using mbed::nfc::ndef::MessageBuilder;
 using mbed::nfc::ndef::common::URI;
+using mbed::nfc::ndef::common::span_from_cstr();
 
 /* URL that will be written into the tag */
 const uint8_t url_string[] = "mbed.com";
@@ -72,8 +74,6 @@ private:
         } else {
             printf("failed to read (error: %d)\r\n", result);
         }
-
-        _queue.break_dispatch();
     }
 
     virtual void parse_ndef_message(const Span<const uint8_t> &buffer) {
@@ -87,7 +87,9 @@ private:
 
         MessageBuilder builder(buffer);
 
-        URI uri(URI::HTTPS_WWW, url_string);
+        /* URI expected a non-null terminated string  so we use a helper function that casts
+         * the pointer into a Span of size smaller by one */
+        URI uri(URI::HTTPS_WWW, span_from_cstr(url_string));
 
         uri.append_as_record(builder, true);
 
