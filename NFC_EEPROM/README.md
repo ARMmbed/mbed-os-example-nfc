@@ -16,9 +16,9 @@ Information about activity is also printed over the serial connection - please h
 
 You will also need to supply the driver for the EEPROM. This example is known to work on DISCO_L475VG_IOT01A which uses M24SR. To get the driver you may clone the repository:
 
-	```
-	$ git clone https://github.com/ARMmbed/mbed-nfc-m24sr.git
-	```
+```
+$ git clone https://github.com/ARMmbed/mbed-nfc-m24sr.git
+```
     
 and place the folder in the NFC_EEPROM folder. The build process will pick up this library and build it as part of the mbed-os build.
 
@@ -26,26 +26,26 @@ and place the folder in the NFC_EEPROM folder. The build process will pick up th
 
 Clone the repository containing the collection of examples:
 
-	```
-	$ git clone https://github.com/ARMmbed/mbed-os-example-nfc.git
-	```
+```
+$ git clone https://github.com/ARMmbed/mbed-os-example-nfc.git
+```
 
 Using a command-line tool, navigate to the exmaple:
 
-	```
-	$ cd mbed-os-example-ble
-	$ cd NFC_EEPROM
-	```
+```
+$ cd mbed-os-example-nfc
+$ cd NFC_EEPROM
+```
 
 Update the source tree:
 
-	```
-	mbed deploy
-	```
+```
+mbed deploy
+```
 
 Run the build:
 
-	```
-    mbed compile -t <ARM | GCC_ARM> -m <YOUR_TARGET>
-    ```
+```
+mbed compile -t <ARM | GCC_ARM> -m <YOUR_TARGET>
+```
 
