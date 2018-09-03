@@ -22,13 +22,7 @@ Information about activity is also printed over the serial connection - please h
 
 - [Tera Term](https://ttssh2.osdn.jp/index.html.en)
 
-You will also need to supply the driver for the EEPROM. This example is known to work on DISCO_L475VG_IOT01A which uses M24SR. To get the driver you may clone the repository:
-
-```
-git clone https://github.com/ARMmbed/mbed-nfc-m24sr.git
-```
-    
-and place the folder in the NFC_EEPROM folder. The build process will pick up this library and build it as part of the mbed-os build.
+You will also need to supply the driver for the EEPROM. This example is known to work on DISCO_L475VG_IOT01A which uses M24SR. The driver is downloaded during deployment step (`mbed deploy`). This is based on the contents of the `eeprom_driver.lib` file. The build process will pick up this library and build it as part of the mbed-os build. If you want to use a different driver, please update the contents of `eeprom_driver.lib` to point at the github repository containing the driver.
 
 ## Building instructions
 
