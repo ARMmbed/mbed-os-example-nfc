@@ -12,6 +12,8 @@ mbed::nfc::vendor::ST::M24srDriver eeprom_driver;
 
 Replace this with a driver you wish to use - it will be passed in to the example to construct the `NFCEEPROM`.
 
+The example may also use a PN512 controller. This driver is included and doesn't require any external dependency.
+
 # Running the application
 
 ## Requirements
@@ -44,6 +46,17 @@ Update the source tree:
 ```
 mbed deploy
 ```
+
+Edit `mbed_app.json` which contains the configuration. Depending on what board you have select which driver to use by setting the value to true or false. If you have a DISCO_L475VG_IOT01A set the M24SR value to true:
+```
+"M24SR": {
+    "help": "Build example including the M24SR EEPROM driver",
+    "macro_name": "EXAMPLE_M24SR",
+    "value": true
+}
+```
+
+Unless your board also has a PN512 controller set the other value to false.
 
 Run the build:
 

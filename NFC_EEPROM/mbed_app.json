@@ -1,0 +1,14 @@
+{
+    "config": {
+        "M24SR": {
+            "help": "Build example including the M24SR EEPROM driver",
+            "macro_name": "EXAMPLE_M24SR",
+            "value": true
+        },
+        "PN512": {
+            "help": "Build example including the PN512",
+            "macro_name": "EXAMPLE_PN512",
+            "value": false
+        }
+    }
+}

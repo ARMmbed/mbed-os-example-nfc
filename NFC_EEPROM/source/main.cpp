@@ -22,6 +22,17 @@
 
 #include "NFCEEPROM.h"
 
+#if EXAMPLE_M24SR
+#include "m24sr_driver.h"
+#endif
+
+#if EXAMPLE_PN512
+#include "nfc/NFCController.h"
+#include "NfcController2EepromAdapter.h"
+#include "nfc/controllers/PN512Driver.h"
+#include "nfc/controllers/PN512SPITransportDriver.h"
+#endif
+
 using events::EventQueue;
 
 using mbed::nfc::NFCEEPROM;
@@ -31,39 +42,6 @@ using mbed::Span;
 using mbed::nfc::ndef::MessageBuilder;
 using mbed::nfc::ndef::common::URI;
 using mbed::nfc::ndef::common::span_from_cstr;
-
-#if 0
-#include "m24sr_driver.h"
-
-NFCEEPROMDriver& get_eeprom_driver(EventQueue&) {
-    static mbed::nfc::vendor::ST::M24srDriver eeprom_driver;
-    return eeprom_driver;
-}
-
-#else
-
-#include "nfc/NFCController.h"
-#include "NfcController2EepromAdapter.h"
-#include "nfc/controllers/PN512Driver.h"
-#include "nfc/controllers/PN512SPITransportDriver.h"
-
-using mbed::nfc::Controller2EepromDriverAdapter;
-using mbed::nfc::NFCController;
-
-NFCEEPROMDriver& get_eeprom_driver(EventQueue& queue) {
-    static uint8_t ndef_controller_buffer[1024] = { 0 };
-    static uint8_t eeprom_buffer[1024] = { 0 };
-
-    static mbed::nfc::PN512SPITransportDriver pn512_transport(D11, D12, D13, D10, A1, A0);
-    static mbed::nfc::PN512Driver pn512_driver(&pn512_transport);
-
-    static NFCController nfc_controller(&pn512_driver, &queue, ndef_controller_buffer);
-    static Controller2EepromDriverAdapter eeprom_driver(nfc_controller, eeprom_buffer);
-    return eeprom_driver;
-}
-
-#endif
-
 
 /* URL that will be written into the tag */
 const char url_string[] = "mbed.com";
@@ -138,10 +116,34 @@ int main()
 {
     EventQueue queue;
 
-    EEPROMExample example(queue, get_eeprom_driver(queue));
-    example.run();
+#if EXAMPLE_M24SR
+    {
+        mbed::nfc::vendor::ST::M24srDriver eeprom_driver;
 
-    queue.dispatch_forever();
+        EEPROMExample example(queue, eeprom_driver);
+
+        example.run();
+        queue.dispatch_forever();
+    }
+#endif
+
+#if EXAMPLE_PN512
+    {
+        uint8_t ndef_controller_buffer[1024] = { 0 };
+        uint8_t eeprom_buffer[1024] = { 0 };
+
+        mbed::nfc::PN512SPITransportDriver pn512_transport(D11, D12, D13, D10, A1, A0);
+        mbed::nfc::PN512Driver pn512_driver(&pn512_transport);
+
+        mbed::nfc::NFCController nfc_controller(&pn512_driver, &queue, ndef_controller_buffer);
+        mbed::nfc::Controller2EepromDriverAdapter eeprom_driver(nfc_controller, eeprom_buffer);
+
+        EEPROMExample example(queue, eeprom_driver);
+
+        example.run();
+        queue.dispatch_forever();
+    }
+#endif
 
     return 0;
 }
