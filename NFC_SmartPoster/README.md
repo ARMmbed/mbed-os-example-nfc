@@ -2,7 +2,7 @@
 
 Demonstration of possible usage of the the `NFCController` class.
 
-The application creates and a smart poster record and sends a smart poster record when a connected peer requires it.
+The application creates a smart poster record and sends it when a connected peer requests it.
 The smart poster record generated contains:
 - A URI: https://www.mbed.com
 - A title: "mbed website"
