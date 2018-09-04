@@ -1,14 +1,10 @@
 {
-    "config": {
-        "M24SR": {
-            "help": "Build example including the M24SR EEPROM driver",
-            "macro_name": "EXAMPLE_M24SR",
-            "value": true
+    "target_overrides": {
+        "DISCO_L475VG_IOT01A": {
+            "target.extra_labels_add": ["M24SR"]
         },
-        "PN512": {
-            "help": "Build example including the PN512",
-            "macro_name": "EXAMPLE_PN512",
-            "value": false
+        "NUCLEO_F401RE": {
+            "target.extra_labels_add": ["PN512"]
         }
     }
 }
