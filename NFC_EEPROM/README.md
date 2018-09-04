@@ -4,15 +4,7 @@ Demonstration of possible usage of the NFC EEPROM class.
 
 The application will write an URL to the EEPROM of the NFC tag on your board. This will be able to be read by any NFC device capable of reading NFC tags.
 
-The example needs to supply a driver to the eprom. This example uses the M24SR driver. You may wish to replace the existing driver with your own driver if you're using a different board:
-
-```c++
-mbed::nfc::vendor::ST::M24srDriver eeprom_driver;
-```
-
-Replace this with a driver you wish to use - it will be passed in to the example to construct the `NFCEEPROM`.
-
-The example may also use a PN512 controller. This driver is included and doesn't require any external dependency.
+The example needs to supply a driver to the eeprom. This example uses the M24SR driver on the DISCO\_L475VG\_IOT01A and target and the PN512 driver on the NUCLEO\_F401RE target. You may wish to add your own driver or update the configuration if you're using a different board.
 
 # Running the application
 
@@ -47,16 +39,14 @@ Update the source tree:
 mbed deploy
 ```
 
-Edit `mbed_app.json` which contains the configuration. Depending on what board you have select which driver to use by setting the value to true or false. If you have a DISCO_L475VG_IOT01A set the M24SR value to true:
-```
-"M24SR": {
-    "help": "Build example including the M24SR EEPROM driver",
-    "macro_name": "EXAMPLE_M24SR",
-    "value": true
-}
+If your board is not a DISCO\_L475VG\_IOT01A or a NUCLEO\_F401RE you should indicate in the configuration which driver should be selected by the build system. Edit `mbed_app.json` which contains the configuration. In the `target_overrides` section add your target configuration. The drivers currently supported are `PN512` and `M24SR`.
+
+```json
+    "<TARGET_NAME>": {
+        "target.extra_labels_add": ["<DRIVER_NAME>"]
+    }
 ```
 
-Unless your board also has a PN512 controller set the other value to false.
 
 Run the build:
 
