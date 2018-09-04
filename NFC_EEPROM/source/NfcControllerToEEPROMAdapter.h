@@ -26,13 +26,13 @@
 namespace mbed {
 namespace nfc {
 
-class Controller2EepromDriverAdapter :
+class ControllerToEEEPROMDriverAdapter :
     public NFCEEPROMDriver,
     private NFCController::Delegate,
     private NFCRemoteInitiator::Delegate
 {
 public:
-    Controller2EepromDriverAdapter(
+    ControllerToEEEPROMDriverAdapter(
         NFCController &controller,
         const Span<uint8_t> &buffer
     ) :
@@ -43,7 +43,7 @@ public:
     {
     }
 
-    virtual ~Controller2EepromDriverAdapter() {
+    virtual ~ControllerToEEEPROMDriverAdapter() {
         if (_nfc_remote_initiator.get()) {
             _nfc_remote_initiator->set_delegate(NULL);
         }

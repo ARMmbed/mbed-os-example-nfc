@@ -28,7 +28,7 @@
 
 #if EXAMPLE_PN512
 #include "nfc/NFCController.h"
-#include "NfcController2EepromAdapter.h"
+#include "NfcControllerToEEPROMAdapter.h"
 #include "nfc/controllers/PN512Driver.h"
 #include "nfc/controllers/PN512SPITransportDriver.h"
 #endif
