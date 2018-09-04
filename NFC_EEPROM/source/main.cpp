@@ -22,16 +22,7 @@
 
 #include "NFCEEPROM.h"
 
-#if EXAMPLE_M24SR
-#include "m24sr_driver.h"
-#endif
-
-#if EXAMPLE_PN512
-#include "nfc/NFCController.h"
-#include "NfcControllerToEEPROMAdapter.h"
-#include "nfc/controllers/PN512Driver.h"
-#include "nfc/controllers/PN512SPITransportDriver.h"
-#endif
+#include "EEPROMDriver.h"
 
 using events::EventQueue;
 
@@ -115,35 +106,12 @@ private:
 int main()
 {
     EventQueue queue;
+    NFCEEPROMDriver& eeprom_driver = get_eeprom_driver(queue);
 
-#if EXAMPLE_M24SR
-    {
-        mbed::nfc::vendor::ST::M24srDriver eeprom_driver;
+    EEPROMExample example(queue, eeprom_driver);
 
-        EEPROMExample example(queue, eeprom_driver);
-
-        example.run();
-        queue.dispatch_forever();
-    }
-#endif
-
-#if EXAMPLE_PN512
-    {
-        uint8_t ndef_controller_buffer[1024] = { 0 };
-        uint8_t eeprom_buffer[1024] = { 0 };
-
-        mbed::nfc::PN512SPITransportDriver pn512_transport(D11, D12, D13, D10, A1, A0);
-        mbed::nfc::PN512Driver pn512_driver(&pn512_transport);
-
-        mbed::nfc::NFCController nfc_controller(&pn512_driver, &queue, ndef_controller_buffer);
-        mbed::nfc::Controller2EepromDriverAdapter eeprom_driver(nfc_controller, eeprom_buffer);
-
-        EEPROMExample example(queue, eeprom_driver);
-
-        example.run();
-        queue.dispatch_forever();
-    }
-#endif
+    example.run();
+    queue.dispatch_forever();
 
     return 0;
 }
