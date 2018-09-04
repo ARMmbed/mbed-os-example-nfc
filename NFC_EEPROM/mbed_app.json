@@ -1,0 +1,10 @@
+{
+    "target_overrides": {
+        "DISCO_L475VG_IOT01A": {
+            "target.extra_labels_add": ["M24SR"]
+        },
+        "NUCLEO_F401RE": {
+            "target.extra_labels_add": ["PN512"]
+        }
+    }
+}
