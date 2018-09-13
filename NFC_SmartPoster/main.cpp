@@ -103,15 +103,10 @@ private:
     /* ------------------------------------------------------------------------
      * Implementation of NFCRemoteInitiator::Delegate
      */
-    virtual void on_connected()
-    {
-        printf("Connected\r\n");
-    }
+    virtual void on_connected() { }
 
     virtual void on_disconnected()
     {
-        printf("Disconnected\r\n");
-
         // reset the state of the remote initiator
         _nfc_remote_initiator->set_delegate(NULL);
         _nfc_remote_initiator.reset();
@@ -120,15 +115,10 @@ private:
         _nfc_controller.start_discovery();
     }
 
-    virtual void parse_ndef_message(const Span<const uint8_t> &buffer)
-    {
-        printf("Received an ndef message of size %d\r\n", buffer.size());
-    }
+    virtual void parse_ndef_message(const Span<const uint8_t> &buffer) { }
 
     virtual size_t build_ndef_message(const Span<uint8_t> &buffer)
     {
-        printf("Building SmartPoster message\r\n");
-
         // build the smart poster object we want to send
         SmartPoster smart_poster(
             URI(URI::HTTPS_WWW, span_from_cstr("mbed.com"))
@@ -151,7 +141,6 @@ private:
      */
     virtual void on_discovery_terminated(nfc_discovery_terminated_reason_t reason)
     {
-        printf("Discovery terminated: %u\r\n", reason);
         if(reason != nfc_discovery_terminated_completed) {
             _nfc_controller.start_discovery();
         }
@@ -159,8 +148,6 @@ private:
 
     virtual void on_nfc_initiator_discovered(const SharedPtr<NFCRemoteInitiator> &nfc_initiator)
     {
-        printf("Initiator discovered\r\n");
-
         // setup the local remote initiator
         _nfc_remote_initiator = nfc_initiator;
         _nfc_remote_initiator->set_delegate(this);
