@@ -54,3 +54,6 @@ Run the build:
 mbed compile -t <ARM | GCC_ARM> -m <YOUR_TARGET>
 ```
 
+# Known issues
+
+* This example doesn't work with IAR 7.80.
