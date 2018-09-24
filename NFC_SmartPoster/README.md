@@ -35,6 +35,12 @@ cd mbed-os-example-nfc
 cd NFC_SmartPoster
 ```
 
+Update the source tree:
+
+```
+mbed deploy
+```
+
 Run the build:
 
 ```
