@@ -14,10 +14,6 @@ The smart poster record generated contains:
 
 Verification of the sample application can be seen on any a smartphone with an NFC reader. After running you will be able to read the tag with an NFC tag reader application.
 
-Information about activity is also printed over the serial connection - please have a client open. You may use:
-
-- [Tera Term](https://ttssh2.osdn.jp/index.html.en)
-
 This example is known to work on boards connected to a PN512 shield.
 
 ## Building instructions
