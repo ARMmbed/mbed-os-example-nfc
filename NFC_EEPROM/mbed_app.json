@@ -3,6 +3,9 @@
         "DISCO_L475VG_IOT01A": {
             "target.extra_labels_add": ["M24SR"]
         },
+        "K64F": {
+            "target.extra_labels_add": ["NT3H2111"]
+        },
         "NUCLEO_F401RE": {
             "target.extra_labels_add": ["PN512"]
         }
