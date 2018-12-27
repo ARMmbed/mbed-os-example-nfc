@@ -23,7 +23,7 @@ You will also need to supply the driver for the EEPROM. This example is known to
 Clone the repository containing the collection of examples:
 
 ```
-git clone https://github.com/ARMmbed/mbed-os-example-nfc.git
+git clone https://github.com/vince-zeng/mbed-os-example-nfc.git
 ```
 
 Using a command-line tool, navigate to the exmaple:
@@ -52,6 +52,11 @@ Run the build:
 
 ```
 mbed compile -t <ARM | GCC_ARM> -m <YOUR_TARGET>
+```
+
+For NXP K64F, run the following command:
+```
+(5)	mbed compile –toolchain GCC_ARM –target K64F
 ```
 
 # Known issues
