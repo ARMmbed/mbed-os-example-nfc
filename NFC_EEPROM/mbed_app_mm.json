@@ -1,0 +1,34 @@
+{
+  "macros": ["NFC_I2C_SDA=GPS_NFC_I2C_SDA","NFC_I2C_SCL=GPS_NFC_I2C_SCL","NFC_FIELD_DETECTION=NFC_FIELD_DETECT"
+],
+"target_overrides": {
+    "*": {
+      "platform.stdio-baud-rate": 115200,
+      "platform.stdio-convert-newlines": true,
+      "platform.stdio-buffered-serial": true,
+      "platform.default-serial-baud-rate": 115200,
+      "mbed-trace.enable": 1,
+      "drivers.uart-serial-txbuf-size": 1024,
+      "drivers.uart-serial-rxbuf-size": 1024
+    },  
+	"DISCO_L475VG_IOT01A": {
+	    "target.extra_labels_add": ["M24SR"]
+	},
+	"K64F": {
+	    "target.extra_labels_add": ["NT3H2111"]
+	},
+	"NUCLEO_F401RE": {
+	    "target.extra_labels_add": ["PN512"]
+	},  
+    "MM": {
+      "target.extra_labels_add": ["NT3H2111"],
+      "target.OUTPUT_EXT": "hex",
+      "target.features_remove": [
+        "CRYPTOCELL310"
+      ],
+      "target.macros_remove": [
+        "MBEDTLS_CONFIG_HW_SUPPORT"
+      ]    
+    }
+  }
+}

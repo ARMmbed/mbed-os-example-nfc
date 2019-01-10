@@ -1,0 +1,10 @@
+{
+"MM": {
+        "inherits": ["MCU_NRF52840"],
+        "release_versions": ["5"],
+        "device_name": "nRF52840_xxAA",
+        "detect_code": ["0465"],
+        "features_remove": ["CRYPTOCELL310"],
+        "macros_remove": ["MBEDTLS_CONFIG_HW_SUPPORT"]
+    }
+}

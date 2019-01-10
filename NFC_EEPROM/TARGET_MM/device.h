@@ -1,5 +1,7 @@
+// The 'features' section in 'target.json' is now used to create the device's hardware preprocessor switches.
+// Check the 'features' section of the target description in 'targets.json' for more details.
 /* mbed Microcontroller Library
- * Copyright (c) 2018-2018 ARM Limited
+ * Copyright (c) 2006-2013 ARM Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef MBED_DEVICE_H
+#define MBED_DEVICE_H
 
-#include "EEPROMDriver.h"
-#include "nt3h_driver.h"
+#include "objects.h"
 
-mbed::nfc::NFCEEPROMDriver& get_eeprom_driver(events::EventQueue&)
-{
-    static mbed::nfc::vendor::NXP::NT3HDriver eeprom_driver(NFC_I2C_SDA,NFC_I2C_SCL,NFC_FIELD_DETECTION);
-    return eeprom_driver;
-}
+#endif

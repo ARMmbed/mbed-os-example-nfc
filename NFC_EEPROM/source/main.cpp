@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include "mbed.h"
 #include "events/EventQueue.h"
 
 #include "nfc/ndef/MessageBuilder.h"
@@ -36,6 +36,16 @@ using mbed::nfc::ndef::common::span_from_cstr;
 
 /* URL that will be written into the tag */
 const char url_string[] = "mbed.com";
+
+#ifdef TARGET_MM
+DigitalOut wifi_no(WIFI_N, 0); // configure mux for cellular
+DigitalOut cell_power_control(CELL_PWR_EN, 0); // turn on cell
+DigitalOut cell_on(CELL_ON, 0);
+DigitalOut cell_emerg_rst(CELL_EMERG_RST, 0); // let this high on modem side
+DigitalOut gnss_power_control(GPS_PWR_EN, 0);  // turn off gps
+DigitalOut wifi_power_enable(WIFI_PWR_EN, 0); // wifi vcc power off
+#endif
+
 
 class EEPROMExample : mbed::nfc::NFCEEPROM::Delegate
 {
