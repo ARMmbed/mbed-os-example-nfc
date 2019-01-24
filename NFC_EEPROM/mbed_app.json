@@ -8,6 +8,12 @@
         },
         "NUCLEO_F401RE": {
             "target.extra_labels_add": ["PN512"]
+        },
+		"NRF52_DK": {
+            "target.extra_labels_add": ["NT3H2111"]
+        },
+		"NRF52840_DK": {
+            "target.extra_labels_add": ["NT3H2111"]
         }
     }
 }

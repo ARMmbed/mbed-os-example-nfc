@@ -23,6 +23,7 @@
 #include "NFCEEPROM.h"
 
 #include "EEPROMDriver.h"
+#include "mbed.h"
 
 using events::EventQueue;
 

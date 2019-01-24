@@ -19,6 +19,6 @@
 
 mbed::nfc::NFCEEPROMDriver& get_eeprom_driver(events::EventQueue&)
 {
-    static mbed::nfc::vendor::NXP::NT3HDriver eeprom_driver(D14,D15,D5);
+    static mbed::nfc::vendor::NXP::NT3HDriver eeprom_driver(MBED_CONF_MBED_NFC_NT3H2111_SDA,MBED_CONF_MBED_NFC_NT3H2111_SCL,MBED_CONF_MBED_NFC_NT3H2111_FD);
     return eeprom_driver;
 }

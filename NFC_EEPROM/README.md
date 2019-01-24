@@ -23,7 +23,7 @@ You will also need to supply the driver for the EEPROM. This example is known to
 Clone the repository containing the collection of examples:
 
 ```
-git clone https://github.com/vince-zeng/mbed-os-example-nfc.git
+https://github.com/ARMmbed/mbed-os-example-nfc
 ```
 
 Using a command-line tool, navigate to the exmaple:
@@ -45,7 +45,6 @@ If your board is not a DISCO\_L475VG\_IOT01A or a NUCLEO\_F401RE you should indi
     "<TARGET_NAME>": {
         "target.extra_labels_add": ["<DRIVER_NAME>"]
     }
-```
 
 
 Run the build:
@@ -54,11 +53,22 @@ Run the build:
 mbed compile -t <ARM | GCC_ARM> -m <YOUR_TARGET>
 ```
 
+
+For nRF52840_DK, run the following command(**Don't use mbed detect, mbed target auto or choose NRF52_DK as target!**):
+```
+mbed compile –toolchain GCC_ARM –target NRF52840_DK
+```
+Drag and drop the .\BUILD\NRF52840_DK\GCC_ARM\NFC_EEPROM.hex to the device 
+**(Don't drag and drop NFC_EEPROM_update.bin if you use nRF52840_DK as the target)**
+
+
 For NXP K64F, run the following command:
 ```
-(5)	mbed compile –toolchain GCC_ARM –target K64F
+mbed compile –toolchain GCC_ARM –target K64F
 ```
+Drag and drop the .\BUILD\NRF52840_DK\GCC_ARM\NFC_EEPROM_update.bin to the device 
 
 # Known issues
 
 * This example doesn't work with IAR 7.80.
+
