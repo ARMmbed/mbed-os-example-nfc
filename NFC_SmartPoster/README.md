@@ -12,9 +12,8 @@ The smart poster record generated contains:
 
 ## Requirements
 
-Verification of the sample application can be seen on any a smartphone with an NFC reader. After running you will be able to read the tag with an NFC tag reader application.
-
-This example is known to work on boards connected to a PN512 shield.
+- NXP PN512 shield
+- Smartphone with an NFC reader
 
 ## Building instructions
 
