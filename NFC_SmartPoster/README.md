@@ -16,6 +16,38 @@ Verification of the sample application can be seen on any a smartphone with an N
 
 This example is known to work on boards connected to a PN512 shield.
 
+**Wirring diagram for NFC Explorer with PN512**
+
+If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram to connect the shield to the reference target. In this case a ST NucleoF401RE pinout is shown.
+
+              Nucleo F401RE                Explore NFC                 
+             (Arduino header)        (pin1 on shield shown with a <|)
+         +-------+     +-------+             +--------+                  
+         | [NC]  |     | [B8]  |             |[ 2][ 1]|                  
+         | [IOREF|     | [B9]  |             |[ 4][ 3]|                  
+         | [RST] |     | [AVDD]|             |[ 6][ 5]|                  
+    1<---+ [3V3] |     | [GND] |             |[ 8][ 7]|                  
+         | [5V]  |     | [A5]  +--->23       |[10][ 9]|                  
+         | [GND] |     | [A6]  +--->21       |[12][11]|                  
+    25<--+ [GND] |     | [A7]  +--->19       |[14][13]|                  
+         | [VIN] |     | [B6]  +--->3        |[16][15]|                  
+         |       |     | [C7]  |             |[18][17]|                  
+    26<--+ [A0]  |     | [A9]  |             |[20][19]|                  
+    16<--+ [A1]  |     | [A9]  |             |[22][21]|                  
+         | ...   |     |       |             |[24][23]|                  
+         |       |     | [A8]  |             |[26][25]|                  
+         +-------+     | ...   |             +--------+                  
+                       |       |                               
+                       |       |                               
+                       +-------+                               
+                                             
+    Patch using jumper wires to the             
+    indicated pins on the Shield.            
+
+
+Schematic (https://www.element14.com/community/docs/DOC-76384/l/explore-nfc-board-schematic)
+
+
 ## Building instructions
 
 Clone the repository containing the collection of examples:
