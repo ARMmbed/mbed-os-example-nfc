@@ -23,6 +23,7 @@
 #include "NFCEEPROM.h"
 
 #include "EEPROMDriver.h"
+#include <cstdio>
 
 using events::EventQueue;
 
