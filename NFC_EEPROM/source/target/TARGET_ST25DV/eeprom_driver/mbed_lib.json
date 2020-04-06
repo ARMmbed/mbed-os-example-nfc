@@ -1,0 +1,15 @@
+{
+    "name": "MBED_NFC_ST25DV",
+    "config": {
+        "X_NUCLEO_NFC04A1": {
+            "macro_name": "MBED_CONF_X_NUCLEO_NFC04A1",
+            "value": true,
+            "help": "Device is using an X-NUCLEO-NFC04A1 shield attached through an arduino header"
+        },
+        "nfceeprom": {
+            "macro_name": "MBED_CONF_NFCEEPROM",
+            "value": false,
+            "help": "Device supports NFC EEPROM"
+        }
+    }
+}
