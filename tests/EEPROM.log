@@ -1,0 +1,4 @@
+Building an ndef message
+message written successfully
+Received an ndef message of size \d+
+message read successfully
