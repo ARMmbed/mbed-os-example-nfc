@@ -4,7 +4,8 @@
             "target.extra_labels_add": ["M24SR"]
         },
         "NUCLEO_F401RE": {
-            "target.extra_labels_add": ["ST25DV"]
+            "target.extra_labels_add": ["ST25DV"],
+            "mbed-trace.enable": true
         }
     }
 }

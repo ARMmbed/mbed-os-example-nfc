@@ -136,6 +136,12 @@ NFCTAG_StatusTypeDef ST25DV_i2c_SetMBEN_Dyn( I2C * mi2cChannel );
 NFCTAG_StatusTypeDef ST25DV_i2c_ResetMBEN_Dyn( I2C * mi2cChannel );
 NFCTAG_StatusTypeDef ST25DV_i2c_ReadMBLength_Dyn( uint8_t * const pMBLength, I2C * mi2cChannel );
 
+static NFCTAG_StatusTypeDef ST25DV_i2c_SelectSpeed( uint8_t i2cspeedchoice, I2C* mi2cChannel );
+static NFCTAG_StatusTypeDef ST25DV_i2c_MemRead( uint8_t * const pData, const uint8_t DevAddr, const uint16_t TarAddr, const uint16_t Size, I2C* mi2cChannel );
+static NFCTAG_StatusTypeDef ST25DV_i2c_MemWrite( const uint8_t * const pData, const uint8_t DevAddr, const uint16_t TarAddr, const uint16_t Size, I2C* mi2cChannel );
+static NFCTAG_StatusTypeDef ST25DV_i2c_Read( uint8_t * const pData, const uint8_t DevAddr, const uint16_t Size, I2C* mi2cChannel );
+static NFCTAG_StatusTypeDef ST25DV_ConvertStatus( uint8_t ret );
+
 /* Global variables ---------------------------------------------------------*/
 /**
   * @brief    Standard NFC tag driver API for the ST25DV.
@@ -242,10 +248,11 @@ uint8_t aSt25Dv[ST25DV_MAX_INSTANCE] = {0};
   * @param mi2cChannel : I2C channel
   * @return NFCTAG_StatusTypeDef enum status.
   */
-NFCTAG_StatusTypeDef ST25DV_i2c_Init( I2C* mi2cChannel, DigitalOut * mLPD )
+NFCTAG_StatusTypeDef ST25DV_i2c_Init( I2C *mi2cChannel, DigitalOut *mLPD )
 {
   /* Configure the low level interface */
-  return ST25DV_IO_Init( mi2cChannel, mLPD );
+  *mLPD = 0;
+  return ST25DV_i2c_SelectSpeed(3, mi2cChannel);
 }
 
 /**
@@ -283,7 +290,15 @@ NFCTAG_StatusTypeDef ST25DV_i2c_ReadICRev( uint8_t * const pICRev, I2C * mi2cCha
 NFCTAG_StatusTypeDef ST25DV_i2c_IsDeviceReady( const uint32_t Trials, I2C * mi2cChannel)
 {
   /* Test communication with device */
-  return ST25DV_IO_IsDeviceReady( ST25DV_ADDR_DATA_I2C, Trials, mi2cChannel);
+  int ret = 4;
+  uint32_t count = 0;
+
+  while ((count++ < Trials && ret) )
+  {
+    ret = mi2cChannel -> write(ST25DV_ADDR_DATA_I2C, NULL, 0 , false);
+  }
+
+  return ST25DV_ConvertStatus(ret);
 }
 
 /**
@@ -393,7 +408,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteITPulse( const ST25DV_PULSE_DURATION ITtime
 NFCTAG_StatusTypeDef ST25DV_i2c_ReadData( uint8_t * const pData, const uint16_t TarAddr, const uint16_t NbByte, I2C * mi2cChannel)
 {
   /* Read Data in user memory */
-  return ST25DV_IO_MemRead( pData, ST25DV_ADDR_DATA_I2C, TarAddr, NbByte, mi2cChannel );
+  return ST25DV_i2c_MemRead( pData, ST25DV_ADDR_DATA_I2C, TarAddr, NbByte, mi2cChannel );
 }
 
 /**
@@ -429,7 +444,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteData( const uint8_t * const pData, const ui
       split_data_nb = bytes_to_write;
     }
     /* Write split_data_nb bytes in memory */
-    ret = ST25DV_IO_MemWrite( pdata_index, ST25DV_ADDR_DATA_I2C, mem_addr, split_data_nb, mi2cChannel);
+    ret = ST25DV_i2c_MemWrite( pdata_index, ST25DV_ADDR_DATA_I2C, mem_addr, split_data_nb, mi2cChannel);
 
     Timer t;
     /* POLLING, NEW CODE */
@@ -442,7 +457,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteData( const uint8_t * const pData, const ui
       do
       {
         t.start();
-        pollstatus = ST25DV_IO_IsDeviceReady( ST25DV_ADDR_DATA_I2C , 1, mi2cChannel);
+        pollstatus = ST25DV_i2c_IsDeviceReady( 1, mi2cChannel);
         ms = t.read_ms();
         t.stop();
       } while( ( ms  < ST25DV_I2C_TIMEOUT) && (pollstatus != NFCTAG_OK) );
@@ -474,7 +489,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteData( const uint8_t * const pData, const ui
 NFCTAG_StatusTypeDef ST25DV_i2c_ReadDataCurrentAddr( uint8_t * const pData, const uint16_t NbByte, I2C* mi2cChannel )
 {
   /* Read Data in user memory */
-  return ST25DV_IO_Read( pData, ST25DV_ADDR_DATA_I2C, NbByte, mi2cChannel );
+  return ST25DV_i2c_Read( pData, ST25DV_ADDR_DATA_I2C, NbByte, mi2cChannel );
 }
 
 /**
@@ -488,7 +503,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_ReadDataCurrentAddr( uint8_t * const pData, cons
 NFCTAG_StatusTypeDef ST25DV_i2c_ReadRegister( uint8_t * const pData, const uint16_t TarAddr, const uint16_t NbByte, I2C * mi2cChannel )
 {  
   /* Read Data in system memory */
-  return ST25DV_IO_MemRead( pData, ST25DV_ADDR_SYST_I2C, TarAddr, NbByte, mi2cChannel );
+  return ST25DV_i2c_MemRead( pData, ST25DV_ADDR_SYST_I2C, TarAddr, NbByte, mi2cChannel );
 }
 
 /**
@@ -524,7 +539,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteRegister( const uint8_t * const pData, cons
       split_data_nb = bytes_to_write;
     }
     /* Write split_data_nb bytes in register */
-    ret = ST25DV_IO_MemWrite( pdata_index, ST25DV_ADDR_SYST_I2C, mem_addr, split_data_nb, mi2cChannel);
+    ret = ST25DV_i2c_MemWrite( pdata_index, ST25DV_ADDR_SYST_I2C, mem_addr, split_data_nb, mi2cChannel);
 
     Timer t;
     /* POLLING, NEW CODE */
@@ -535,7 +550,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteRegister( const uint8_t * const pData, cons
          do
          {
            t.start();
-           pollstatus = ST25DV_IO_IsDeviceReady( ST25DV_ADDR_DATA_I2C , 1, mi2cChannel);
+           pollstatus = ST25DV_i2c_IsDeviceReady( 1, mi2cChannel);
            ms = t.read_ms();
            t.stop();
          } while( ( ms  < ST25DV_I2C_TIMEOUT) && (pollstatus != NFCTAG_OK) );
@@ -1619,7 +1634,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_ReadMailboxData( uint8_t * const pData, const ui
   }
   
   /* Read Data in user memory */
-  return ST25DV_IO_MemRead( pData, ST25DV_ADDR_DATA_I2C, ST25DV_MAILBOX_RAM_REG + Offset, NbByte,  mi2cChannel );
+  return ST25DV_i2c_MemRead( pData, ST25DV_ADDR_DATA_I2C, ST25DV_MAILBOX_RAM_REG + Offset, NbByte,  mi2cChannel );
 }
 
 /**
@@ -1637,7 +1652,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteMailboxData( const uint8_t * const pData, c
   if( NbByte < ST25DV_MAX_MAILBOX_LENGTH )
   {
     /* Write NbByte data in memory */
-    status = ST25DV_IO_MemWrite( pData, ST25DV_ADDR_DATA_I2C, ST25DV_MAILBOX_RAM_REG, NbByte,  mi2cChannel);
+    status = ST25DV_i2c_MemWrite( pData, ST25DV_ADDR_DATA_I2C, ST25DV_MAILBOX_RAM_REG, NbByte,  mi2cChannel);
   }
   else
   {
@@ -1662,7 +1677,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_ReadMailboxRegister( uint8_t * const pData, cons
     return NFCTAG_ERROR;
   }
   
-  return ST25DV_IO_MemRead( pData, ST25DV_ADDR_DATA_I2C, TarAddr, NbByte,  mi2cChannel );
+  return ST25DV_i2c_MemRead( pData, ST25DV_ADDR_DATA_I2C, TarAddr, NbByte,  mi2cChannel );
 }
 
 /**
@@ -1686,7 +1701,7 @@ NFCTAG_StatusTypeDef ST25DV_i2c_WriteMailboxRegister( const uint8_t * const pDat
   if( NbByte < ST25DV_MAX_MAILBOX_LENGTH )
   {
     /* Write NbByte data in memory */
-    status = ST25DV_IO_MemWrite( pData, ST25DV_ADDR_DATA_I2C, TarAddr, NbByte, mi2cChannel);
+    status = ST25DV_i2c_MemWrite( pData, ST25DV_ADDR_DATA_I2C, TarAddr, NbByte, mi2cChannel);
   }
   else
   {
@@ -2389,6 +2404,167 @@ NFCTAG_StatusTypeDef ST25DV_i2c_ReadMBLength_Dyn( uint8_t * const pMBLength, I2C
 {
   /* Read actual value of MBLEN_DYN register */
   return ST25DV_i2c_ReadMailboxRegister( pMBLength, ST25DV_MBLEN_DYN_REG, 1, mi2cChannel );
+}
+
+/**
+ * @brief  This function select the i2cChannel1 speed to communicate with NFCTAG
+ * @param  i2cChannelspeedchoice Number from 0 to 5 to select i2cChannel speed
+ * @param  mi2cChannel : I2C channel
+ * @retval HAL GPIO pin status
+ */
+static NFCTAG_StatusTypeDef ST25DV_i2c_SelectSpeed( uint8_t i2cspeedchoice, I2C* mi2cChannel )
+{
+  switch( i2cspeedchoice )
+  {
+  case 0:
+    
+    mi2cChannel -> frequency(10000);
+    break;
+    
+  case 1:
+    
+    mi2cChannel -> frequency(100000);
+    break;
+    
+  case 2:
+    
+    mi2cChannel -> frequency(200000);
+    break;
+    
+  case 3:
+    
+    mi2cChannel -> frequency(400000);
+    break;
+    
+  case 4:
+    
+    mi2cChannel -> frequency(800000);
+    break;
+    
+  case 5:
+    
+    mi2cChannel -> frequency(1000000);
+    break;
+    
+  default:
+    
+    mi2cChannel -> frequency(1000000);
+    break;
+  }
+
+  return NFCTAG_OK;
+}
+
+/**
+ * @brief  Reads data at a specific address from the NFCTAG.
+ * @param  pData: pointer to store read data
+ * @param  TarAddr : i2c data memory address to read
+ * @param  Size : Size in bytes of the value to be read
+ * @param  mi2cChannel : I2C channel
+ * @retval NFCTAG enum status
+  */
+static NFCTAG_StatusTypeDef ST25DV_i2c_MemRead( uint8_t * const pData, const uint8_t DevAddr, const uint16_t TarAddr, const uint16_t Size, I2C* mi2cChannel )
+{
+  uint8_t ret = 4;
+  uint8_t Addr = DevAddr;
+  uint8_t buffer[2];
+
+  buffer[0] = (uint8_t) (TarAddr>>8);
+  buffer[1] = (uint8_t) (TarAddr&0xFF);
+  
+  ret = mi2cChannel -> write(Addr, (const char*)buffer , 2 , false);
+  
+  // Address is not OK
+  if(ret != 0)
+  {
+    return ST25DV_ConvertStatus(ret);
+  }
+  
+  char * pDataChar = (char*) pData;
+  
+  ret = mi2cChannel -> read(Addr, pDataChar, Size, false );
+  
+  return ST25DV_ConvertStatus(ret);
+}
+
+/**
+  * @brief  Write data, at specific address, through i2c to the ST25DV
+  * @param  pData: pointer to the data to write
+  * @param  DevAddr : Target device address
+  * @param  TarAddr : i2c data memory address to write
+  * @param  Size : Size in bytes of the value to be written
+  * @param mi2cChannel : I2C channel
+  * @retval NFCTAG enum status
+  */
+static NFCTAG_StatusTypeDef ST25DV_i2c_MemWrite( const uint8_t * const pData, const uint8_t DevAddr, const uint16_t TarAddr, const uint16_t Size, I2C* mi2cChannel )
+{
+  uint8_t ret = 4;
+  uint8_t Addr = DevAddr;
+
+  uint8_t buffer[2];
+  buffer[0] = (uint8_t) (TarAddr>>8);
+  buffer[1] = (uint8_t) (TarAddr&0xFF);  
+
+  char * pDataChar = (char*) pData;  
+
+  ret = mi2cChannel -> write(Addr, (const char*)buffer, 2 , true);
+
+  // Address is not OK
+  if(ret != 0)
+  {
+    return ST25DV_ConvertStatus(ret);
+  }
+
+  ret = mi2cChannel -> write(Addr, pDataChar, Size, false);
+
+  return ST25DV_ConvertStatus(ret);
+}
+
+/**
+  * @brief  Reads data at current address from the NFCTAG.
+  * @param  pData: pointer to store read data
+  * @param  DevAddr : Target device address
+  * @param  Size : Size in bytes of the value to be read
+  * @retval NFCTAG enum status
+  */
+static NFCTAG_StatusTypeDef ST25DV_i2c_Read( uint8_t * const pData, const uint8_t DevAddr, const uint16_t Size, I2C* mi2cChannel )
+{
+  //this has to change( send  addr then read)
+  int i = 0;
+  uint8_t ret = 4;
+
+  char * pDataChar = (char*) pData;
+  uint8_t ReadAddr = DevAddr | 1u;
+  ret = mi2cChannel -> read(ReadAddr, pDataChar, 1, false );
+
+  // Tell slave we need to read 1byte from the current register
+  while(mi2cChannel -> read( 0 ) != 0)
+  {
+    pData[i++] = mi2cChannel -> read( 0 );    
+  }
+  
+  return ST25DV_ConvertStatus( ret);
+}
+
+/**
+ * @brief  Utility to convert status to error code
+ * @param  return value to be converted
+ * @retval error code
+ */
+static NFCTAG_StatusTypeDef ST25DV_ConvertStatus( uint8_t ret )
+{
+  if (ret == 0)
+  {
+    return NFCTAG_OK;
+  }
+  else if ((ret == 2) || (ret == 3))
+  {
+    return NFCTAG_NACK;
+  }
+  else
+  {
+    return NFCTAG_ERROR;
+  }
 }
 
 /**

@@ -1,8 +1,8 @@
 /**
  ******************************************************************************
- * @file    m24sr_driver.cpp
+ * @file    st25dv_driver.cpp
  * @author  ST Central Labs
- * @brief   This file provides a set of functions to interface with the M24SR
+ * @brief   This file provides a set of functions to interface with the ST25DV
  *          device.
  ******************************************************************************
  * @attention
@@ -42,117 +42,212 @@ namespace nfc {
 namespace vendor {
 namespace ST {
 
+/** @brief Memory size value indicating that this is a 8-bytes Capability Container */
+#define NFCT5_EXTENDED_CCFILE             0x00
+/** @brief Capability container version 1.0 */
+#define NFCT5_VERSION_V1_0                0x40
+/** @brief Read access condition mask for the Capability Container byte1 */
+#define NFCT5_READ_ACCESS                 0x0C
+/** @brief Write access condition mask for the Capability Container byte1 */
+#define NFCT5_WRITE_ACCESS                0x03
+
+/** @brief Type5 Tag NDEF message TLV-Type. */
+#define NFCT5_NDEF_MSG_TLV                ((uint8_t) 0x03)
+/** @brief Type5 Tag Proprietary message TLV-Type. */
+#define NFCT5_PROPRIETARY_TLV             ((uint8_t) 0xFD)
+/** @brief Type5 Tag Terminator TLV-Type. */
+#define NFCT5_TERMINATOR_TLV              ((uint8_t) 0xFE)
+/** @brief TLV-Length indicating a 4-bytes TLV (Length coded on 2 bytes). */
+#define NFCT5_3_BYTES_L_TLV               ((uint8_t) 0xFF)
+
+typedef enum
+{
+  TT5_NO_NDEF = 0,  /**< No data detected in the tag. */
+  TT5_INITIALIZED,  /**< Capability container detected. */
+  TT5_READ_WRITE,   /**< Read-Write data detected. */
+  TT5_READ          /**< Read-Only data message detected. */
+} TT5_State_t;
+
+/** @brief Type5 Tag Capability Container Magic numbers as defined by the NFC Forum. */
+typedef enum {
+  NFCT5_MAGICNUMBER_E1_CCFILE = 0xE1, /**<  Complete data area can be read by 1-byte block adrdess commands. */
+  NFCT5_MAGICNUMBER_E2_CCFILE = 0xE2  /**<  Last part of the data area can be only read by 2-bytes block address commands.\n
+                                            The first 256 blocks can be read by 1-byte block address commands. */
+} TT5_MagicNumber_t;
+
+/** @brief Type5 Tag Type-Length-Value structure as defined by the NFC Forum */
+typedef struct
+{
+  uint8_t   Type;     /**< NFC Forum message Type */
+  uint8_t   Length;   /**< Message length if lesser than 255 bytes */
+  uint16_t  Length16; /**< Message length if greater than or equal to 255 bytes */
+} TT5_TLV_t;
+
+/**
+  * @brief  Type5 Tag Capability Container structure.
+  */
+struct sCCFileInfo
+{
+  TT5_MagicNumber_t MagicNumber;  /**< CCfile[0]: Magic Number should be E1h or E2h (for extended API) */
+  uint8_t Version;                /**< CCfile[1]: Capability container version (b7-b4) and access conditions (b3-b0) */
+  uint8_t MemorySize;             /**< CCfile[2]: Memory size, expressed in 8 bytes blocks, set to 0 if tag size is greater than 16kbits. */
+  uint8_t TT5Tag;                 /**< CCfile[3]: Additionnal information on the Type5 Tag:\n
+                                                  b0: supports `read multiple block` commands\n
+                                                  b1: RFU\n
+                                                  b2: RFU\n
+                                                  b3: supports `lock block` commands\n
+                                                  b4: requires the `special frame` format
+                                    */
+  uint8_t rsved1;                 /**< RFU */
+  uint8_t rsved2;                 /**< RFU */
+  uint16_t ExtMemorySize;         /**< CCfile[6],CCfile[7]: Memory size, expressed in 8 bytes blocks, when tag size is greater than 16kbits. */
+  TT5_State_t State;                /**< Indicates if a NDEF message is present. */
+  uint32_t NDEF_offset;           /**< Indicates the address of a NDEF message in the tag. */
+};
+
 ST25dvDriver::ST25dvDriver(PinName i2c_data_pin,
                             PinName i2c_clock_pin,
-                            PinName led1_pin,
-                            PinName led2_pin,
-                            PinName led3_pin,
                             PinName lpd_pin,
                             PinName gpo_pin)
     : _i2c_channel(i2c_data_pin, i2c_clock_pin),
-      _led1_pin(led1_pin),
-      _led2_pin(led2_pin),
-      _led3_pin(led3_pin),
       _lpd_pin(lpd_pin),
       _gpo_pin(gpo_pin),
-      _ndef_size(MAX_NDEF_SIZE),
       _is_device_inited(false),
       _is_session_started(false) {
     /* driver requires valid pin names */
     MBED_ASSERT(i2c_data_pin != NC);
     MBED_ASSERT(i2c_clock_pin != NC);
-    MBED_ASSERT(led1_pin != NC);
-    MBED_ASSERT(led2_pin != NC);
-    MBED_ASSERT(led3_pin != NC);
     MBED_ASSERT(lpd_pin != NC);
     MBED_ASSERT(gpo_pin != NC);
+
+    mbed_trace_init();
 }
 
-int ST25dvDriver::begin(void) {
-    int ret = 0;
+int ST25dvDriver::begin(void)
+{
+  int ret = 0;
+  
+  /* NFCTAG Init */
+  ret = NFCTAG_Init();
+  if(ret != NFCTAG_OK)
+  {
+    return ret;
+  }
+
+  CCFileStruct = (sCCFileInfo_t *)malloc(sizeof(sCCFileInfo_t));
+  if(CCFileStruct == NULL)
+  {
+    return NFCTAG_ERROR;
+  }
+
+  _max_mem_size = NFCTAG_GetByteSize();
+  _ndef_size = _max_mem_size;
+
+  /* Reset MBEN Dynamic */
+  NFCTAG_GetExtended_Drv()->ResetMBEN_Dyn( &_i2c_channel );
+  
+  if( NfcType5_NDEFDetection() != NDEF_OK )
+  {
+    tr_debug("NDEF not detected\r\n");
     
-    // Light some leds
-    ledOn(_led1_pin);
-    wait_us( 300000 );
-    ledOn(_led2_pin);
-
-    /* NFCTAG Init */
-    ret = NFCTAG_Init();
-    if(ret != NFCTAG_OK)
-        return ret;
-
-    /* Reset MBEN Dynamic */
-    NFCTAG_GetExtended_Drv()->ResetMBEN_Dyn( &_i2c_channel );
-
-    if( NfcType5_NDEFDetection() != NDEF_OK ) {
-        printf("NDEF not detected\r\n");
-
-        CCFileStruct.MagicNumber = NFCT5_MAGICNUMBER_E1_CCFILE;
-        CCFileStruct.Version = NFCT5_VERSION_V1_0;
-        CCFileStruct.MemorySize = ( ST25DV_MAX_SIZE / 8 ) & 0xFF;
-        CCFileStruct.TT5Tag = 0x05;
-
-        /* Init of the Type Tag 5 component */
-        ret = NfcType5_TT5Init();
-        if (ret != NDEF_OK)
-            return ret;
-        
-    } else {
-        printf("NDEF detected\r\n");
-    }
-
-    ledOff( _led1_pin );
-    wait_us( 300000 );
-    ledOff( _led2_pin );
-    wait_us( 300000 );
-    ledOff( _led3_pin );
-    wait_us( 300000 );
-    return NFCTAG_OK;
-}
-
-int ST25dvDriver::read_data(uint32_t address, uint8_t* bytes, size_t count) {
+    CCFileStruct->MagicNumber = NFCT5_MAGICNUMBER_E1_CCFILE;
+    CCFileStruct->Version = NFCT5_VERSION_V1_0;
+    CCFileStruct->MemorySize = ( _max_mem_size / 8 ) & 0xFF;
+    CCFileStruct->TT5Tag = 0x05;
     
-    (void) address;
-    (void) count;
-    int ret = NfcType5_ReadNDEF((uint8_t*)bytes);
-
-    if (ret != NDEF_OK) {   
-        return ret;
-    }
-    return NFCTAG_OK;
+    /* Init of the Type Tag 5 component */
+    ret = NfcType5_TT5Init();
+    if (ret != NDEF_OK)
+      return ret;
+    
+  }
+  else
+  {
+    tr_debug("NDEF detected\r\n");
+  }
+  
+  return NFCTAG_OK;
 }
 
-int ST25dvDriver::write_data(uint32_t address, const uint8_t* bytes, size_t count) {
+int ST25dvDriver::open_session(bool force)
+{
+  int ret = NFCTAG_OK;
 
-    (void) address;
-    int ret = NfcType5_WriteNDEF(count, (uint8_t*)bytes);
+  if(force)
+  {
+    ret = ((NFCTAG_ExtDrvTypeDef *)Nfctag_Drv->pData)->SetRFDisable_Dyn( &_i2c_channel );
+  }
 
-    if (ret != NDEF_OK) {   
-        return ret;
-    }
-    return NFCTAG_OK;
+  return (ret);
 }
 
-int ST25dvDriver::get_size(void) {
-    int ret = NfcType5_GetLength(&_ndef_size);
-
-    if (ret != NDEF_OK) {   
-        return ret;
-    }
-    return NFCTAG_OK;
+int ST25dvDriver::close_session(void)
+{
+  return ((NFCTAG_ExtDrvTypeDef *)Nfctag_Drv->pData)->ResetRFDisable_Dyn( &_i2c_channel );
 }
 
-int ST25dvDriver::set_size(size_t count) {
-    int ret = NfcType5_SetLength(count);
+int ST25dvDriver::read_data(uint32_t address, uint8_t* bytes, size_t count)
+{
+  int ret;
 
-    if (ret != NDEF_OK) {   
-        return ret;
-    }
-    return NFCTAG_OK;
+  if(address >= CCFileStruct->MemorySize*8)
+  {
+    return NFCTAG_ERROR;
+  }
+  if( count > _max_mem_size )
+  {
+    return NFCTAG_ERROR;
+  }
+  ret = NfcType5_ReadNDEF((uint8_t*)bytes);
+
+  if (ret != NDEF_OK)
+  {   
+    return ret;
+  }
+  return NFCTAG_OK;
 }
 
-NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_Init(void) {
+int ST25dvDriver::write_data(uint32_t address, const uint8_t* bytes, size_t count)
+{
+  int ret;
 
+  if(address >= CCFileStruct->MemorySize*8)
+  {
+    return NFCTAG_ERROR;
+  }
+  ret = NfcType5_WriteNDEF(count, (uint8_t*)bytes);
+  
+  if (ret != NDEF_OK)
+  {   
+    return ret;
+  }
+  return NFCTAG_OK;
+}
+
+int ST25dvDriver::get_size(void)
+{
+  int ret = NfcType5_GetLength((uint16_t *)&_ndef_size);
+  
+  if (ret != NDEF_OK)
+  {   
+    return ret;
+  }
+  return NFCTAG_OK;
+}
+
+int ST25dvDriver::set_size(size_t count)
+{
+  int ret = NfcType5_SetLength(count);
+  
+  if (ret != NDEF_OK)
+  {   
+    return ret;
+  }
+  return NFCTAG_OK;
+}
+
+NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_Init(void)
+{  
   uint8_t nfctag_id;
   
   if( !_is_device_inited )
@@ -162,7 +257,6 @@ NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_Init(void) {
     {
       return NFCTAG_ERROR;
     }
-
 
     St25Dv_i2c_Drv.ReadID(&nfctag_id, &_i2c_channel);
     
@@ -185,19 +279,18 @@ NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_Init(void) {
 }
 
 
-NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_ReadData(uint8_t * const pData, const uint16_t TarAddr, const uint16_t Size) {
-    
+NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_ReadData(uint8_t * const pData, const uint16_t TarAddr, const uint16_t Size)
+{
   if ( Nfctag_Drv->ReadData == NULL )
   {
     return NFCTAG_ERROR;
   }
-  
+
   return Nfctag_Drv->ReadData( pData, TarAddr, Size, &_i2c_channel );
 }
 
-
-NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_WriteData(const uint8_t * const pData, const uint16_t TarAddr, const uint16_t Size) {
-    
+NFCTAG_StatusTypeDef ST25dvDriver::NFCTAG_WriteData(const uint8_t * const pData, const uint16_t TarAddr, const uint16_t Size)
+{    
   if ( Nfctag_Drv->WriteData == NULL )
   {
     return NFCTAG_ERROR;
@@ -224,26 +317,6 @@ NFCTAG_ExtDrvTypeDef* ST25dvDriver::NFCTAG_GetExtended_Drv(void)
 }
 
 /**
-  * @brief  This function light on selected Led
-  * @param  led : Led to be lit on
-  * @retval None
-  */
-void ST25dvDriver::ledOn(DigitalOut led) {
-    printf("ledOn\r\n");
-    led.write(1);
-}
-
-/**
-  * @brief  This function light off selected Led
-  * @param  led : Led to be lit off
-  * @retval None
-  */
-
-void ST25dvDriver::ledOff(DigitalOut led) {
-    led.write(0);
-}
-
-/**
   * @brief    This function detects a NDEF message in a Type 5 Tag.
   * @details  It first detects the Capability Container and then look for the NDEF TLV.
   *           The `CCfileStruct` global variable is updated accordingly with what is detected.
@@ -257,7 +330,7 @@ uint16_t ST25dvDriver::NfcType5_NDEFDetection(void)
   uint16_t status;
   uint32_t memory_size;
   
-  CCFileStruct.State = TT5_NO_NDEF;
+  CCFileStruct->State = TT5_NO_NDEF;
 
   /* Read CCFile */
   status = NfcType5_ReadCCFile( acc_buffer );
@@ -282,45 +355,45 @@ uint16_t ST25dvDriver::NfcType5_NDEFDetection(void)
   if( acc_buffer[2] == 0x00 )
   {
     /* Update CCFIle structure */
-    CCFileStruct.MemorySize = 0x0;
-    CCFileStruct.ExtMemorySize = (uint16_t)acc_buffer[6];
-    CCFileStruct.ExtMemorySize = ( CCFileStruct.ExtMemorySize << 8 ) |  acc_buffer[7];
-    memory_size = CCFileStruct.ExtMemorySize;
-    CCFileStruct.NDEF_offset = 8;
+    CCFileStruct->MemorySize = 0x0;
+    CCFileStruct->ExtMemorySize = (uint16_t)acc_buffer[6];
+    CCFileStruct->ExtMemorySize = ( CCFileStruct->ExtMemorySize << 8 ) |  acc_buffer[7];
+    memory_size = CCFileStruct->ExtMemorySize;
+    CCFileStruct->NDEF_offset = 8;
   }
   else
   {
     /* Update CCFIle structure */
-    CCFileStruct.MemorySize = acc_buffer[2];
-    CCFileStruct.ExtMemorySize = 0x0;
-    memory_size = CCFileStruct.MemorySize;
-    CCFileStruct.NDEF_offset = 4;
+    CCFileStruct->MemorySize = acc_buffer[2];
+    CCFileStruct->ExtMemorySize = 0x0;
+    memory_size = CCFileStruct->MemorySize;
+    CCFileStruct->NDEF_offset = 4;
   }
   
   /* Update CCFIle structure */
-  CCFileStruct.MagicNumber = (TT5_MagicNumber_t)acc_buffer[0];
-  CCFileStruct.Version = acc_buffer[1];
-  CCFileStruct.TT5Tag = acc_buffer[3];
+  CCFileStruct->MagicNumber = (TT5_MagicNumber_t)acc_buffer[0];
+  CCFileStruct->Version = acc_buffer[1];
+  CCFileStruct->TT5Tag = acc_buffer[3];
   
   /* Search for position of NDEF TLV in memory and tag status */
-  while( ( NFCTAG_ReadData( (uint8_t *)&tlv_detect, CCFileStruct.NDEF_offset, sizeof(TT5_TLV_t) ) == NFCTAG_OK ) && ( CCFileStruct.NDEF_offset < memory_size ) )
+  while( ( NFCTAG_ReadData( (uint8_t *)&tlv_detect, CCFileStruct->NDEF_offset, sizeof(TT5_TLV_t) ) == NFCTAG_OK ) && ( CCFileStruct->NDEF_offset < memory_size ) )
   {
     /* Detect first NDEF Message in memory */
     if( tlv_detect.Type == NFCT5_NDEF_MSG_TLV )
     {
       if( tlv_detect.Length == 0x00 )
       {
-        CCFileStruct.State = TT5_INITIALIZED;
+        CCFileStruct->State = TT5_INITIALIZED;
       }
       else
       {
-        if( CCFileStruct.Version & 0x3 )
+        if( CCFileStruct->Version & 0x3 )
         {
-          CCFileStruct.State = TT5_READ;
+          CCFileStruct->State = TT5_READ;
         }
         else
         {
-          CCFileStruct.State = TT5_READ_WRITE;
+          CCFileStruct->State = TT5_READ_WRITE;
         }
       }
       return NDEF_OK;
@@ -330,12 +403,12 @@ uint16_t ST25dvDriver::NfcType5_NDEFDetection(void)
     {
       if( tlv_detect.Length == NFCT5_3_BYTES_L_TLV )
       {
-        CCFileStruct.NDEF_offset = CCFileStruct.NDEF_offset + tlv_detect.Length16;
+        CCFileStruct->NDEF_offset = CCFileStruct->NDEF_offset + tlv_detect.Length16;
         continue;
       }
       else
       {
-        CCFileStruct.NDEF_offset = CCFileStruct.NDEF_offset + tlv_detect.Length;
+        CCFileStruct->NDEF_offset = CCFileStruct->NDEF_offset + tlv_detect.Length;
         continue;
       }
     }
@@ -345,7 +418,7 @@ uint16_t ST25dvDriver::NfcType5_NDEFDetection(void)
      return NDEF_ERROR_NOT_FORMATTED;
     }
       
-    CCFileStruct.NDEF_offset++;
+    CCFileStruct->NDEF_offset++;
   }
   
   return NDEF_ERROR_NOT_FORMATTED;
@@ -353,7 +426,7 @@ uint16_t ST25dvDriver::NfcType5_NDEFDetection(void)
 
 /**
   * @brief  This function initializes the Capability Container and an empty NDEF message in a NFC Tag.
-  * @details The Capability Container content is defined by the global variable `CCFileStruct`.
+  * @details The Capability Container content is defined by the variable `CCFileStruct`.
   * @retval NDEF_ERROR The Tag has not been initialized.
   * @retval NDEF_OK    The Tag has been successfully initialized.
   */
@@ -365,18 +438,18 @@ uint16_t ST25dvDriver::NfcType5_TT5Init(void)
   uint8_t cdata;
 
   /* Prepare buffer to update CCFile */
-  accbuffer[0] = CCFileStruct.MagicNumber;
-  accbuffer[1] = CCFileStruct.Version;
-  accbuffer[2] = CCFileStruct.MemorySize;
-  accbuffer[3] = CCFileStruct.TT5Tag;
-  CCFileStruct.NDEF_offset = 0x04;
+  accbuffer[0] = CCFileStruct->MagicNumber;
+  accbuffer[1] = CCFileStruct->Version;
+  accbuffer[2] = CCFileStruct->MemorySize;
+  accbuffer[3] = CCFileStruct->TT5Tag;
+  CCFileStruct->NDEF_offset = 0x04;
   
   /* If extended memory prepare the length bytes */
-  if( CCFileStruct.MemorySize == NFCT5_EXTENDED_CCFILE )
+  if( CCFileStruct->MemorySize == NFCT5_EXTENDED_CCFILE )
   {
-    accbuffer[6] = (uint8_t)(CCFileStruct.ExtMemorySize >> 8);
-    accbuffer[7] = (uint8_t)(CCFileStruct.ExtMemorySize & 0xFF);
-    CCFileStruct.NDEF_offset = 0x08;
+    accbuffer[6] = (uint8_t)(CCFileStruct->ExtMemorySize >> 8);
+    accbuffer[7] = (uint8_t)(CCFileStruct->ExtMemorySize & 0xFF);
+    CCFileStruct->NDEF_offset = 0x08;
   }
   
   /* Update CCFile */
@@ -391,7 +464,7 @@ uint16_t ST25dvDriver::NfcType5_TT5Init(void)
   /* Update NDEF TLV for INITIALIZED state */
   /* Update T */
   cdata = NFCT5_NDEF_MSG_TLV;
-  ret_value = NFCTAG_WriteData( &cdata, CCFileStruct.NDEF_offset, 1 );
+  ret_value = NFCTAG_WriteData( &cdata, CCFileStruct->NDEF_offset, 1 );
   if( ret_value != NFCTAG_OK )
   {
     return NDEF_ERROR;
@@ -399,7 +472,7 @@ uint16_t ST25dvDriver::NfcType5_TT5Init(void)
 
   /* Update L */
   cdata = 0x00;
-  ret_value = NFCTAG_WriteData( &cdata, (CCFileStruct.NDEF_offset + 1), 1 );
+  ret_value = NFCTAG_WriteData( &cdata, (CCFileStruct->NDEF_offset + 1), 1 );
   if( ret_value != NFCTAG_OK )
   {
     return NDEF_ERROR;
@@ -485,7 +558,7 @@ uint16_t ST25dvDriver::NfcType5_ReadNDEF( uint8_t* pData )
   }
   
   /* Read TL of Type 5 */
-  status = NFCTAG_ReadData( (uint8_t*)&tlv, CCFileStruct.NDEF_offset, sizeof(TT5_TLV_t) );
+  status = NFCTAG_ReadData( (uint8_t*)&tlv, CCFileStruct->NDEF_offset, sizeof(TT5_TLV_t) );
   if( status != NDEF_OK )
   {
     return status;
@@ -502,14 +575,14 @@ uint16_t ST25dvDriver::NfcType5_ReadNDEF( uint8_t* pData )
     tlv_size = 2;
     DataLength = tlv.Length;
   }
-      /* If too many data to write return error */
-  if( DataLength > NDEF_MAX_SIZE )
+  /* If too many data to write return error */
+  if( DataLength > _max_mem_size )
   {
     return NDEF_ERROR_MEMORY_INTERNAL;
   }
   
   /* Check CC file is in the correct mode to proceed */
-  if( CCFileStruct.State ==  TT5_INITIALIZED )
+  if( CCFileStruct->State ==  TT5_INITIALIZED )
   {
     return NDEF_ERROR;
   }
@@ -517,7 +590,7 @@ uint16_t ST25dvDriver::NfcType5_ReadNDEF( uint8_t* pData )
   if( DataLength > 0 )
   {
     /* Read NDEF */
-    if( NFCTAG_ReadData( (pData), CCFileStruct.NDEF_offset + tlv_size, DataLength ) != NFCTAG_OK )
+    if( NFCTAG_ReadData( (pData), CCFileStruct->NDEF_offset + tlv_size, DataLength ) != NFCTAG_OK )
     {
       return NDEF_ERROR;
     }
@@ -544,21 +617,27 @@ uint16_t ST25dvDriver::NfcType5_WriteNDEF( uint16_t Length, uint8_t *pData )
   if(Length >= 0xFF)
   {
     tlv_size = 4;
-  } else {
+  }
+  else
+  {
     tlv_size = 2;
   }
 
-  offset = CCFileStruct.NDEF_offset + tlv_size;
+  offset = CCFileStruct->NDEF_offset + tlv_size;
 
   /* Continue write TLV data  to EEPROM */
   if(NFCTAG_WriteData( pData , offset, Length ) != NFCTAG_OK )
-      return NDEF_ERROR;
+  {
+    return NDEF_ERROR;
+  }
 
   offset +=Length;
   
   /* Write Terminator TLV */
   if(NFCTAG_WriteData( &NfcT5_Terminator, offset, sizeof(NfcT5_Terminator) ) != NFCTAG_OK)
+  {
     return NDEF_ERROR;
+  }
   
   return NDEF_OK;
 }
@@ -568,12 +647,11 @@ uint16_t ST25dvDriver::NfcType5_SetLength(uint16_t Length)
   TT5_TLV_t tlv;
   uint8_t tlv_size;
   uint32_t offset;
-  uint8_t NfcT5_Terminator = NFCT5_TERMINATOR_TLV;
-  
+  printf("NFCTAG_GetByteSize=%d\r\n", NFCTAG_GetByteSize());
   uint32_t max_length = NFCTAG_GetByteSize()        /* Memory size */
                         - ((Length >= 0xFF) ? 4 : 2)    /* - TLV length */
-                        - sizeof(NfcT5_Terminator)      /* - Terminator TLV */
-                        - CCFileStruct.NDEF_offset;     /* - CCfile length */
+                        - sizeof(NFCT5_TERMINATOR_TLV)      /* - Terminator TLV */
+                        - CCFileStruct->NDEF_offset;     /* - CCfile length */
 
   /* If too many data to write return error */
   if( Length > max_length )
@@ -595,12 +673,14 @@ uint16_t ST25dvDriver::NfcType5_SetLength(uint16_t Length)
     tlv.Length16 = ((Length&0xff)<<8) | ((Length>>8)&0xff) ;
     tlv_size = 4;
     
-  } else {
+  }
+  else
+  {
     tlv.Length = Length;
     tlv_size = 2;
   }
 
-  offset = CCFileStruct.NDEF_offset;
+  offset = CCFileStruct->NDEF_offset;
   /* Start write TLV to EEPROM */
   if(NFCTAG_WriteData( (uint8_t*)&tlv, offset, tlv_size )!= NFCTAG_OK)
     return NDEF_ERROR;
@@ -629,7 +709,7 @@ uint16_t ST25dvDriver::NfcType5_GetLength(uint16_t* Length)
   }
   
   /* Read TL of Type 5 */
-  status = NFCTAG_ReadData( (uint8_t*)&tlv, CCFileStruct.NDEF_offset, sizeof(TT5_TLV_t) );
+  status = NFCTAG_ReadData( (uint8_t*)&tlv, CCFileStruct->NDEF_offset, sizeof(TT5_TLV_t) );
   if( status != NFCTAG_OK )
   {
     return NDEF_ERROR;
