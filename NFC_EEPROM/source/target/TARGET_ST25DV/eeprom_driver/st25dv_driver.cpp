@@ -647,7 +647,7 @@ uint16_t ST25dvDriver::NfcType5_SetLength(uint16_t Length)
   TT5_TLV_t tlv;
   uint8_t tlv_size;
   uint32_t offset;
-  printf("NFCTAG_GetByteSize=%d\r\n", NFCTAG_GetByteSize());
+
   uint32_t max_length = NFCTAG_GetByteSize()        /* Memory size */
                         - ((Length >= 0xFF) ? 4 : 2)    /* - TLV length */
                         - sizeof(NFCT5_TERMINATOR_TLV)      /* - Terminator TLV */
