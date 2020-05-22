@@ -1,6 +1,6 @@
 # NFC SmartPoster example
 
-** :warning: Please not running this example requires a PN512 NFC controller and does not support NFC EEPROMs **
+** :warning: Please note running this example requires a PN512 NFC controller and does not support NFC EEPROMs **
 
 Demonstration of possible usage of the the `NFCController` class.
 
