@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 
+#include "platform/mbed_error.h"
 #include "events/EventQueue.h"
 
 #include "nfc/controllers/PN512Driver.h"
@@ -169,8 +170,14 @@ int main()
 
     nfc_err_t ret = nfc_process.init();
     printf("Initialize: ret = %u\r\n", ret);
+    if(ret) {
+        error("Could not initialize the NFC process. Are you sure you are using a supported controller?");
+    }
 
     ret = nfc_process.start_discovery();
+    if(ret) {
+        error("Could not start NFC discovery");
+    }
     printf("Start Discovery: ret = %u\r\n", ret);
 
     queue.dispatch_forever();
