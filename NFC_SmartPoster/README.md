@@ -1,5 +1,7 @@
 # NFC SmartPoster example
 
+** :warning: Please not running this example requires a PN512 NFC controller and does not support NFC EEPROMs **
+
 Demonstration of possible usage of the the `NFCController` class.
 
 The application creates a smart poster record and sends it when a connected peer requests it.
@@ -16,7 +18,7 @@ Verification of the sample application can be seen on any a smartphone with an N
 
 This example is known to work on boards connected to a PN512 shield.
 
-**Wirring diagram for NFC Explorer with PN512**
+**Wiring diagram for NFC Explorer with PN512**
 
 If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram to connect the shield to the reference target. In this case a ST NucleoF401RE pinout is shown.
 
