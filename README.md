@@ -1,3 +1,4 @@
+![](./resources/official_armmbed_example_badge.png)
 # Mbed OS NFC examples 
 
 This repository contains all Mbed OS NFC examples actively developped and maintained by the Mbed OS team. 
