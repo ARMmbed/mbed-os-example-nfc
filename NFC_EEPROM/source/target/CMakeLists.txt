@@ -3,12 +3,12 @@
 
 mbed_add_cmake_directory_if_labels("TARGET")
 
-target_include_directories(mbed-os
+target_include_directories(${APP_TARGET}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_sources(app
+target_sources(${APP_TARGET}
     PRIVATE
         NfcControllerToEEPROMAdapter.cpp
 )
