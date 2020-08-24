@@ -18,6 +18,8 @@ mbed_set_mbed_target_linker_script(${APP_TARGET})
 
 project(${APP_TARGET})
 
+include(${MBED_CONFIG_PATH}/mbed_config.cmake)
+
 add_subdirectory(source/target)
 
 target_include_directories(${APP_TARGET}
