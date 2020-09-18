@@ -32,7 +32,19 @@ target_sources(${APP_TARGET}
         source/main.cpp
 )
 
-target_link_libraries(${APP_TARGET} mbed-os)
+list(APPEND MBED_LINK_LIBRARIES
+    mbed-os
+)
+
+if("PN512" IN_LIST MBED_TARGET_LABELS)
+    list(APPEND MBED_LINK_LIBRARIES
+        mbed-os-connectivity-drivers-nfc-pn512
+    )
+endif()
+
+target_link_libraries(${APP_TARGET}
+    ${MBED_LINK_LIBRARIES}
+)
 
 mbed_generate_bin_hex(${APP_TARGET})
 
