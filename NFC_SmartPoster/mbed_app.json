@@ -1,0 +1,7 @@
+{
+    "target_overrides": {
+        "NUCLEO_F401RE": {
+            "target.extra_labels_add": ["PN512"]
+        }
+    }
+}
