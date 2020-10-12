@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.18.2 FATAL_ERROR)
 # TODO: @mbed-os-tools MBED_ROOT and MBED_CONFIG_PATH should probably come from mbedtools
 set(MBED_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
 set(MBED_CONFIG_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.mbedbuild CACHE INTERNAL "")
-set(APP_TARGET NFC_EEPROM)
+set(APP_TARGET NFC_SmartPoster)
 
 add_subdirectory(${MBED_ROOT})
 
@@ -20,16 +20,15 @@ project(${APP_TARGET})
 
 include(${MBED_CONFIG_PATH}/mbed_config.cmake)
 
-add_subdirectory(source/target)
-
 target_include_directories(${APP_TARGET}
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/source
+        .
 )
 
 target_sources(${APP_TARGET}
     PRIVATE
-        source/main.cpp
+        main.cpp
+        SmartPoster.cpp
 )
 
 target_link_libraries(${APP_TARGET}
