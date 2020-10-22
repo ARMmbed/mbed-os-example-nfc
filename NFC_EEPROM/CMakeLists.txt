@@ -33,8 +33,9 @@ target_sources(${APP_TARGET}
 )
 
 target_link_libraries(${APP_TARGET}
-    mbed-os
-    mbed-os-nfc
+    PRIVATE
+        mbed-os
+        mbed-nfc
 )
 
 mbed_generate_bin_hex(${APP_TARGET})
