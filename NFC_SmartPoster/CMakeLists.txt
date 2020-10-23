@@ -8,6 +8,8 @@ set(MBED_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
 set(MBED_CONFIG_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.mbedbuild CACHE INTERNAL "")
 set(APP_TARGET NFC_SmartPoster)
 
+include(${MBED_ROOT}/tools/cmake/app.cmake)
+
 add_subdirectory(${MBED_ROOT})
 
 add_executable(${APP_TARGET})
@@ -32,8 +34,9 @@ target_sources(${APP_TARGET}
 )
 
 target_link_libraries(${APP_TARGET}
-    mbed-os
-    mbed-os-nfc
+    PRIVATE
+        mbed-os
+        mbed-nfc
 )
 
 mbed_generate_bin_hex(${APP_TARGET})
