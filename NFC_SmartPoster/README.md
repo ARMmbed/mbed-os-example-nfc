@@ -10,17 +10,16 @@ The smart poster record generated contains:
 - A title: "mbed website"
 - An action: `EXECUTE` which asks the peer to open the URI.
 
-# Running the application
+## Running the application
 
-## Requirements
-
-Verification of the sample application can be seen on any a smartphone with an NFC reader. After running you will be able to read the tag with an NFC tag reader application.
+### Requirements
 
 This example is known to work on boards connected to a PN512 shield.
 
 **Wiring diagram for NFC Explorer with PN512**
 
-If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram to connect the shield to the reference target. In this case a ST NucleoF401RE pinout is shown.
+If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram to connect the shield to the reference
+target. In this case a ST NucleoF401RE pinout is shown.
 
               Nucleo F401RE                Explore NFC                 
              (Arduino header)        (pin1 on shield shown with a <|)
@@ -46,34 +45,9 @@ If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram
     Patch using jumper wires to the             
     indicated pins on the Shield.            
 
-
 Schematic (https://www.element14.com/community/docs/DOC-76384/l/explore-nfc-board-schematic)
 
+### Building and running
 
-## Building instructions
-
-Clone the repository containing the collection of examples:
-
-```
-git clone https://github.com/ARMmbed/mbed-os-example-nfc.git
-```
-
-Using a command-line tool, navigate to the exmaple:
-
-```
-cd mbed-os-example-nfc
-cd NFC_SmartPoster
-```
-
-Update the source tree:
-
-```
-mbed deploy
-```
-
-Run the build:
-
-```
-mbed compile -t <ARM | GCC_ARM> -m <YOUR_TARGET>
-```
-
+Building and further running instructions for all samples are in the
+[main readme](https://github.com/ARMmbed/mbed-os-example-nfc/blob/master/README.md).
