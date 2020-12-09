@@ -39,6 +39,8 @@ addons:
     packages:
       - cmake
       - ninja-build
+      - git
+      - mercurial
 
 matrix:
   include:
@@ -78,11 +80,12 @@ matrix:
         - pip install future==0.16.0
         - pip install "Jinja2>=2.10.1,<2.11"
         - pip install "intelhex>=1.3,<=2.2.1"
+        - pip install mbed-cli
       script:
         - cd ${EXAMPLE_NAME}
-        - mbedtools checkout
-        - echo mbedtools build -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
-        - mbedtools build -t GCC_ARM -m ${TARGET_NAME} -b ${PROFILE}
+        - mbed deploy
+        - echo mbed compile -t GCC_ARM -m ${TARGET_NAME} --profile ${PROFILE}
+        - mbed compile -t GCC_ARM -m ${TARGET_NAME} --profile ${PROFILE}
         - ccache -s
         - cd ..
 
