@@ -21,11 +21,12 @@ project(${APP_TARGET})
 
 include(${MBED_CONFIG_PATH}/mbed_config.cmake)
 
-add_subdirectory(source/target)
+add_subdirectory(EEPROMDriver/target)
 
 target_include_directories(${APP_TARGET}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/source
+        ${CMAKE_CURRENT_SOURCE_DIR}/EEPROMDriver
 )
 
 target_sources(${APP_TARGET}

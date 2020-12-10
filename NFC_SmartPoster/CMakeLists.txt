@@ -23,13 +23,14 @@ include(${MBED_CONFIG_PATH}/mbed_config.cmake)
 
 target_include_directories(${APP_TARGET}
     PUBLIC
-        .
+        ${CMAKE_CURRENT_SOURCE_DIR}/source
+        ${CMAKE_CURRENT_SOURCE_DIR}/SmartPoster
 )
 
 target_sources(${APP_TARGET}
     PRIVATE
         main.cpp
-        SmartPoster.cpp
+        SmartPoster/SmartPoster.cpp
 )
 
 target_link_libraries(${APP_TARGET}
