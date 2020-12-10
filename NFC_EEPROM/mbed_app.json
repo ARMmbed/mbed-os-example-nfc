@@ -6,8 +6,20 @@
         "DISCO_L475VG_IOT01A": {
             "target.extra_labels_add": ["M24SR"]
         },
+        "K64F": {
+            "target.extra_labels_add": ["NT3H2111"]
+        },
         "NUCLEO_F401RE": {
             "target.extra_labels_add": ["PN512"]
+        },
+        "NRF52_DK": {
+            "target.extra_labels_add": ["NT3H2111"]
+        },
+        "NRF52840_DK": {
+            "target.extra_labels_add": ["NT3H2111"],
+            "MBED_NFC_NT3H2111.sda": "D14",
+            "MBED_NFC_NT3H2111.scl": "D15",
+            "MBED_NFC_NT3H2111.fd": "D5"
         }
     }
 }
