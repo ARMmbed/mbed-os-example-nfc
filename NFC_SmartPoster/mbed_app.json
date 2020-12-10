@@ -1,10 +1,33 @@
 {
+    "config" : {
+        "pn512_mosi": "NC",
+        "pn512_miso": "NC",
+        "pn512_sclk": "NC",
+        "pn512_ssel": "NC",
+        "pn512_irq": "NC",
+        "pn512_reset": "NC"
+    },
     "target_overrides": {
         "*": {
             "platform.stdio-baud-rate": 115200
         },
         "NUCLEO_F401RE": {
-            "target.extra_labels_add": ["PN512"]
+            "target.extra_labels_add": ["PN512"],
+            "pn512_mosi": "PA_7",
+            "pn512_miso": "PA_6",
+            "pn512_sclk": "PA_5",
+            "pn512_ssel": "PB_6",
+            "pn512_irq": "A1",
+            "pn512_reset": "A0"
+        },
+        "NUCLEO_L433RC_P": {
+            "target.extra_labels_add": ["PN512"],
+            "pn512_mosi": "PA_12",
+            "pn512_miso": "PA_11",
+            "pn512_sclk": "PA_1",
+            "pn512_ssel": "PA_15",
+            "pn512_irq": "A1",
+            "pn512_reset": "A0"
         }
     }
 }
