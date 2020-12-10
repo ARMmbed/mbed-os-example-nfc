@@ -14,36 +14,64 @@ The smart poster record generated contains:
 
 ### Requirements
 
-This example is known to work on boards connected to a PN512 shield.
+This example is known to work on boards connected to a PN512 shield. A configuration is supplied for NUCLEO_F401RE
+and NUCLEO_L433RC_P but most boards will work. You must supply an override in the mbed_app.json for your board for:
 
-**Wiring diagram for NFC Explorer with PN512**
+```
+        "pn512_mosi": "NC",
+        "pn512_miso": "NC",
+        "pn512_sclk": "NC",
+        "pn512_ssel": "NC",
+        "pn512_irq": "NC",
+        "pn512_reset": "NC"
+```
 
-If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram to connect the shield to the reference
-target. In this case a ST NucleoF401RE pinout is shown.
+### Wiring diagram for NFC Explorer with PN512
 
-              Nucleo F401RE                Explore NFC                 
-             (Arduino header)        (pin1 on shield shown with a <|)
-         +-------+     +-------+             +--------+                  
-         | [NC]  |     | [B8]  |             |[ 2][ 1]|                  
-         | [IOREF|     | [B9]  |             |[ 4][ 3]|                  
-         | [RST] |     | [AVDD]|             |[ 6][ 5]|                  
-    1<---+ [3V3] |     | [GND] |             |[ 8][ 7]|                  
-         | [5V]  |     | [A5]  +--->23       |[10][ 9]|                  
-         | [GND] |     | [A6]  +--->21       |[12][11]|                  
-    25<--+ [GND] |     | [A7]  +--->19       |[14][13]|                  
-         | [VIN] |     | [B6]  +--->3        |[16][15]|                  
-         |       |     | [C7]  |             |[18][17]|                  
-    26<--+ [A0]  |     | [A9]  |             |[20][19]|                  
-    16<--+ [A1]  |     | [A9]  |             |[22][21]|                  
-         | ...   |     |       |             |[24][23]|                  
-         |       |     | [A8]  |             |[26][25]|                  
-         +-------+     | ...   |             +--------+                  
-                       |       |                               
-                       |       |                               
-                       +-------+                               
-                                             
-    Patch using jumper wires to the             
-    indicated pins on the Shield.            
+If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram to connect the shield.
+
+                Explore NFC
+      (pin1 on shield shown with a <|)
+                +--------+
+                |[ 2][ 1]| 3V3
+                |[ 4][ 3]| SSEL
+                |[ 6][ 5]|             
+                |[ 8][ 7]|
+                |[10][ 9]|
+                |[12][11]|
+                |[14][13]|
+           IRQ  |[16][15]|
+                |[18][17]|
+                |[20][19]| MOSI
+                |[22][21]| MISO
+                |[24][23]| SCLCK
+          RESET |[26][25]| GRND
+                +--------+
+
+In this case a ST NucleoF401RE pinout is shown.
+
+              Nucleo F401RE                 
+             (Arduino header)
+         +-------+     +-------+                  
+         | [NC]  |     | [B8]  |                  
+         | [IOREF|     | [B9]  |                  
+         | [RST] |     | [AVDD]|                  
+    1<---+ [3V3] |     | [GND] |                  
+         | [5V]  |     | [A5]  +--->23                  
+         | [GND] |     | [A6]  +--->21                  
+    25<--+ [GND] |     | [A7]  +--->19                  
+         | [VIN] |     | [B6]  +--->3                  
+         |       |     | [C7]  |                  
+    26<--+ [A0]  |     | [A9]  |                  
+    16<--+ [A1]  |     | [A9]  |                  
+         | ...   |     |       |                  
+         |       |     | [A8]  |                  
+         +-------+     | ...   |                  
+                       |       |
+                       |       |
+                       +-------+
+
+Patch using jumper wires to the indicated pins on the Shield.            
 
 Schematic (https://www.element14.com/community/docs/DOC-76384/l/explore-nfc-board-schematic)
 
