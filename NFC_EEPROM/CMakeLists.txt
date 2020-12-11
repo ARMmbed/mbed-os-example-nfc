@@ -26,7 +26,8 @@ add_subdirectory(EEPROMDriver/target)
 target_include_directories(${APP_TARGET}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/source
-        ${CMAKE_CURRENT_SOURCE_DIR}/EEPROMDriver
+        ${CMAKE_CURRENT_SOURCE_DIR}/EEPROMDriver/
+        ${CMAKE_CURRENT_SOURCE_DIR}/EEPROMDriver/target
 )
 
 target_sources(${APP_TARGET}

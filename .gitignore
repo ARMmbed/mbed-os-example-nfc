@@ -35,7 +35,6 @@ yotta_targets/
 # clion
 .idea/ 
 cmake-build-*/
-CMakeLists.txt
 
 # exporters 
 GettingStarted.html
