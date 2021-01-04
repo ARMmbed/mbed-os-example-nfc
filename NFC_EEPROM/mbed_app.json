@@ -1,7 +1,7 @@
 {
     "target_overrides": {
         "*": {
-            "platform.stdio-baud-rate": 115200
+            "platform.stdio-baud-rate": 9600
         },
         "DISCO_L475VG_IOT01A": {
             "target.extra_labels_add": ["M24SR"]

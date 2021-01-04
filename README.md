@@ -64,15 +64,15 @@ The tools will flash the binary to all targets that match the board specified by
 ### Running the examples
 
 When example application is running information about activity is printed over the serial connection.
-The default serial baudrate has been set to 115200 for these examples.
+The default serial baudrate has been set to 9600 for these examples.
 
 Please have a client open and connected to the board. You may use:
 
 - [Tera Term](https://ttssh2.osdn.jp/index.html.en) for windows
 
-- screen or minicom for Linux (example usage: `screen /dev/serial/<your board> 115200`)
+- screen or minicom for Linux (example usage: `screen /dev/serial/<your board> 9600`)
 
-- mbed tools have terminal command `mbed term -b 115200`
+- mbed tools have terminal command `mbed term -b 9600`
 
 Verification of the sample application can be seen on any a smartphone with an NFC reader.
 After running you will be able to read the tag with an NFC tag reader application.
