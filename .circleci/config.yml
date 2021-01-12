@@ -31,6 +31,7 @@ jobs:
       - run: |
           cd mbed-os-example-nfc
           cd NFC_SmartPoster
+          mbed update
           mbed compile -t GCC_ARM -m NUCLEO_F401RE || exit 1
 
   build_disco_l475vg:
@@ -43,6 +44,7 @@ jobs:
       - run: |
           cd mbed-os-example-nfc
           cd NFC_EEPROM
+          mbed update
           mbed compile -t GCC_ARM -m DISCO_L475VG_IOT01A || exit 1
 
   cmake_NUCLEO_F401RE:
@@ -52,9 +54,11 @@ jobs:
     steps:
       - attach_workspace:
           at: /root/project
+      - run: python3 -m pip install mbed-tools --upgrade # remove after docker imagine fixed to contain new tools
       - run: |
           cd mbed-os-example-nfc
           cd NFC_SmartPoster
+          mbed update
           mbed-tools compile -t GCC_ARM -m NUCLEO_F401RE || exit 1
 
   cmake_disco_l475vg:
@@ -64,9 +68,11 @@ jobs:
     steps:
       - attach_workspace:
           at: /root/project
+      - run: python3 -m pip install mbed-tools --upgrade # remove after docker imagine fixed to contain new tools
       - run: |
           cd mbed-os-example-nfc
           cd NFC_EEPROM
+          mbed update
           mbed-tools compile -t GCC_ARM -m DISCO_L475VG_IOT01A || exit 1
 
 workflows:
