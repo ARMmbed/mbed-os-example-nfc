@@ -14,9 +14,7 @@ jobs:
       - run: |
           cd mbed-os-example-nfc
           git clone https://github.com/ARMmbed/mbed-os.git
-      - run:
-          working_directory: mbed-os-example-nfc
-          command: for i in NFC_* ; do cd $i ; ln -s $PWD/../mbed-os mbed-os ; cd .. ; done
+          for i in NFC_* ; do cd $i ; ln -s $PWD/../mbed-os mbed-os ; mbed update ; cd .. ; done
       - persist_to_workspace:
           root: /root/project
           paths: mbed-os-example-nfc
@@ -31,7 +29,6 @@ jobs:
       - run: |
           cd mbed-os-example-nfc
           cd NFC_SmartPoster
-          mbed update
           mbed compile -t GCC_ARM -m NUCLEO_F401RE || exit 1
 
   build_disco_l475vg:
@@ -44,7 +41,6 @@ jobs:
       - run: |
           cd mbed-os-example-nfc
           cd NFC_EEPROM
-          mbed update
           mbed compile -t GCC_ARM -m DISCO_L475VG_IOT01A || exit 1
 
   cmake_NUCLEO_F401RE:
@@ -58,8 +54,13 @@ jobs:
       - run: |
           cd mbed-os-example-nfc
           cd NFC_SmartPoster
-          mbed update
           mbed-tools compile -t GCC_ARM -m NUCLEO_F401RE || exit 1
+          mbed-tools compile -t ARM -m NUCLEO_F401RE || exit 1
+      - run: |
+          cd mbed-os-example-nfc
+          cd NFC_EEPROM
+          mbed-tools compile -t GCC_ARM -m NUCLEO_F401RE || exit 1
+          mbed-tools compile -t ARM -m NUCLEO_F401RE || exit 1
 
   cmake_disco_l475vg:
     docker:
@@ -72,8 +73,22 @@ jobs:
       - run: |
           cd mbed-os-example-nfc
           cd NFC_EEPROM
-          mbed update
           mbed-tools compile -t GCC_ARM -m DISCO_L475VG_IOT01A || exit 1
+          mbed-tools compile -t ARM -m DISCO_L475VG_IOT01A || exit 1
+
+  cmake_k64f:
+    docker:
+      - image: mbedos/mbed-os-env:latest
+    working_directory: ~
+    steps:
+      - attach_workspace:
+          at: /root/project
+      - run: python3 -m pip install mbed-tools --upgrade # remove after docker imagine fixed to contain new tools
+      - run: |
+          cd mbed-os-example-nfc
+          cd NFC_EEPROM
+          mbed-tools compile -t GCC_ARM -m K64F || exit 1
+          mbed-tools compile -t ARM -m K64F || exit 1
 
 workflows:
   version: 2
@@ -90,5 +105,8 @@ workflows:
         requires:
           - prepare
     - cmake_disco_l475vg:
+        requires:
+          - prepare
+    - cmake_k64f:
         requires:
           - prepare
