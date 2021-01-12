@@ -11,7 +11,6 @@ jobs:
     steps:
       - checkout:
           path: mbed-os-example-nfc
-      - run: python3 -m pip install mbed-tools --upgrade
       - run: |
           cd mbed-os-example-nfc
           git clone https://github.com/ARMmbed/mbed-os.git
@@ -55,6 +54,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /root/project
+      - run: python3 -m pip install mbed-tools --upgrade # remove after docker imagine fixed to contain new tools
       - run: |
           cd mbed-os-example-nfc
           cd NFC_SmartPoster
@@ -68,6 +68,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /root/project
+      - run: python3 -m pip install mbed-tools --upgrade # remove after docker imagine fixed to contain new tools
       - run: |
           cd mbed-os-example-nfc
           cd NFC_EEPROM
