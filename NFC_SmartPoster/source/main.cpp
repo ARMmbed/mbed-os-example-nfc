@@ -61,7 +61,14 @@ public:
      * @param queue The event queue that will be used by the NFCController.
      */
     NFCProcess(events::EventQueue &queue) :
-        _pn512_transport(D11, D12, D13, D10, A1, A0),
+        _pn512_transport(
+            MBED_CONF_APP_PN512_MOSI,
+            MBED_CONF_APP_PN512_MISO,
+            MBED_CONF_APP_PN512_SCLK,
+            MBED_CONF_APP_PN512_SSEL,
+            MBED_CONF_APP_PN512_IRQ,
+            MBED_CONF_APP_PN512_RESET
+        ),
         _pn512_driver(&_pn512_transport),
         _queue(queue),
         _ndef_buffer(),
