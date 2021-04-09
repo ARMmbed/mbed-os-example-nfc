@@ -1,6 +1,6 @@
 # NFC SmartPoster example
 
-** :warning: Please note running this example requires a PN512 NFC controller and does not support NFC EEPROMs **
+:warning: **Please note running this example requires a PN512 NFC controller**
 
 Demonstration of possible usage of the the `NFCController` class.
 
@@ -14,8 +14,8 @@ The smart poster record generated contains:
 
 ### Requirements
 
-This example is known to work on boards connected to a PN512 shield. A configuration is supplied for NUCLEO_F401RE
-and NUCLEO_L433RC_P but most boards will work. You must supply an override in the mbed_app.json for your board for:
+This example has been tested on boards connected to a PN512 shield. A configuration is supplied for `NUCLEO_F401RE` and `NUCLEO_L433RC_P`, but most boards will work.
+To use other boards you must supply an override in `mbed_app.json` for your board:
 
 ```
         "pn512_mosi": "NC",
@@ -26,9 +26,9 @@ and NUCLEO_L433RC_P but most boards will work. You must supply an override in th
         "pn512_reset": "NC"
 ```
 
-### Wiring diagram for NFC Explorer with PN512
+### Wiring diagram for Explore NFC with PN512
 
-If using the Raspbery Pi explorer (PN512) board, use this pinout mapping diagram to connect the shield.
+If using the Raspberry Pi Explore NFC (PN512) board, use this pinout mapping diagram to connect the shield.
 
                 Explore NFC
       (pin1 on shield shown with a <|)
