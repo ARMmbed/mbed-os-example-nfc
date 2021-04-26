@@ -1,7 +1,7 @@
 ![](./resources/official_armmbed_example_badge.png)
 # Mbed OS NFC examples 
 
-This repo contains NFC example applications based on mbed OS and built with [mbed-cli](https://github.com/ARMmbed/mbed-cli).
+This repo contains NFC example applications based on mbed OS and built with [Mbed CLI 1](https://github.com/ARMmbed/mbed-cli) or [Mbed CLI 2](https://github.com/ARMmbed/mbed-tools).
 
 Each example directory prefixed with `NFC_` contains an Mbed os project.
 
@@ -11,68 +11,98 @@ The [NFC documentation](https://os.mbed.com/docs/latest/apis/nfc-technology.html
 
 ### Targets for NFC
 
-To build these examples, you need to have a computer with software installed as described [here](https://os.mbed.com/docs/latest/tools/index.html).
+Supported targets vary for each example. Check `README.md` in the example's directory for details.
 
-In order to use NFC in mbed OS you will need a baord with an NFC controller or a shield. These examples have been
-tested on:
-- `DISCO_L475VG_IOT01A` with its built in `M24SR`
-- `NUCLEO_F401RE` board with a `NXP PN512` shield
+## Mbed OS build tools
 
-But any board with a NFC shield should work. See documentation for the driver for your shield/board for details.
+### Mbed CLI 2
+Starting with version 6.5, Mbed OS uses Mbed CLI 2. It uses Ninja as a build system, and CMake to generate the build environment and manage the build process in a compiler-independent manner. If you are working with Mbed OS version prior to 6.5 then use [Mbed CLI 1](#mbed-cli-1).
+[Install Mbed CLI 2](https://os.mbed.com/docs/mbed-os/latest/build-tools/install-or-upgrade.html).
 
-### Building and flashing examples
+### Mbed CLI 1
+[Install Mbed CLI 1](https://os.mbed.com/docs/mbed-os/latest/quick-start/offline-with-mbed-cli.html).
 
-__To build an example:__
+## Building the examples
 
-* Clone the repository containing the collection of examples:
+1. Clone the repository containing the collection of examples:
 
-	```
+	```bash
 	$ git clone https://github.com/ARMmbed/mbed-os-example-nfc.git
 	```
 
-	**Tip:** If you don't have git installed, you can [download a zip file](https://github.com/ARMmbed/mbed-os-example-nfc/archive/master.zip) of the repository.
+1. Using a command-line tool, navigate to any of the example directories, like `NFC_EEPROM`:
 
-* Using a command-line tool, navigate to any of the example directories, like NFC EEPROM:
-
-	```
+	```bash
 	$ cd mbed-os-example-nfc
 	$ cd NFC_EEPROM
 	```
 
-* Update the source tree:
+1. Update the source tree:
 
-	```
-	mbed deploy
+	* Mbed CLI 2
+	```bash
+	$ mbed-tools deploy
 	```
 
-* Run the build:
+	* Mbed CLI 1
 
+	```bash
+	$ mbed deploy
 	```
-	mbed compile -t <ARM | GCC_ARM> -m <YOUR_TARGET>
+
+1. Connect a USB cable between the USB port on the board and the host computer.
+
+1. Run the following command: this will build the example project, program the microcontroller flash memory, and then
+open a serial terminal to the device.
+
+    * Mbed CLI 2
+
+    ```bash
+    $ mbed-tools compile -m <TARGET> -t <TOOLCHAIN> --flash --sterm --baudrate 9600
     ```
 
-__To run the application on your board:__
+    * Mbed CLI 1
 
-* Connect your mbed board to your computer over USB. It appears as removable storage.
+    ```bash
+    $ mbed compile -m <TARGET> -t <TOOLCHAIN> --flash --sterm --baudrate 9600
+    ```
 
-* When you run the `mbed compile` command above, mbed cli creates a .bin or a .hex file (depending on your target) in
-```BUILD/<target-name>/<toolchain>``` under the example's directory. Drag and drop the file to the removable storage.
 
-Alternatively you may launch compilation with `-f` flag to have mbed tools attempt to flash your board.
-The tools will flash the binary to all targets that match the board specified by '-m' parameter. 
+Your PC may take a few minutes to compile your code.
 
-### Running the examples
+The binary will be located in the following directory:
+* **Mbed CLI 2** - `./cmake_build/<TARGET>/<PROFILE>/<TOOLCHAIN>/`</br>
+* **Mbed CLI 1** - `./BUILD/<TARGET>/<TOOLCHAIN>/`
 
-When example application is running information about activity is printed over the serial connection.
+You can manually copy the binary to the target, which gets mounted on the host computer through USB, rather than using the `--flash` option.
+
+You can also open a serial terminal separately, as explained below, rather than using the `--sterm` and `--baudrate` options.
+
+## Running the examples
+
+When the example application is running, information about activity is printed over the serial connection.
 The default serial baudrate has been set to 9600 for these examples.
 
-Please have a client open and connected to the board. You may use:
+If not using the `--sterm` and `--baudrate` options when flashing, have a client 
+open and connected to the board. You may use:
 
-- [Tera Term](https://ttssh2.osdn.jp/index.html.en) for windows
+- Mbed CLI 2 
+	```bash
+	$ mbed-tools sterm -b 9600
+	```
 
-- screen or minicom for Linux (example usage: `screen /dev/serial/<your board> 9600`)
+- Mbed CLI 1
+	```bash
+	$ mbed sterm -b 9600
+	```
 
-- mbed tools have terminal command `mbed term -b 9600`
+- [Tera Term](https://ttssh2.osdn.jp/index.html.en) for Windows
+
+- screen or minicom for Linux
+    ```bash
+    $ screen /dev/serial/<your board> 9600
+    ```
+
 
 Verification of the sample application can be seen on any a smartphone with an NFC reader.
 After running you will be able to read the tag with an NFC tag reader application.
