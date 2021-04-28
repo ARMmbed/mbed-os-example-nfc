@@ -33,7 +33,7 @@ NFCEEPROMDriver& get_eeprom_driver(events::EventQueue& queue)
     static uint8_t ndef_controller_buffer[1024] = { 0 };
     static uint8_t eeprom_buffer[1024] = { 0 };
 
-    static PN512SPITransportDriver pn512_transport(D11, D12, D13, D10, A1, A0);
+    static PN512SPITransportDriver pn512_transport(ARDUINO_UNO_D11, ARDUINO_UNO_D12, ARDUINO_UNO_D13, ARDUINO_UNO_D10, ARDUINO_UNO_A1, ARDUINO_UNO_A0);
     static PN512Driver pn512_driver(&pn512_transport);
 
     static NFCController nfc_controller(
