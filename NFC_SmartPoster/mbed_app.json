@@ -17,8 +17,8 @@
             "pn512_miso": "PA_6",
             "pn512_sclk": "PA_5",
             "pn512_ssel": "PB_6",
-            "pn512_irq": "A1",
-            "pn512_reset": "A0"
+            "pn512_irq": "ARDUINO_UNO_A1",
+            "pn512_reset": "ARDUINO_UNO_A0"
         },
         "NUCLEO_L433RC_P": {
             "target.extra_labels_add": ["PN512"],
@@ -26,8 +26,8 @@
             "pn512_miso": "PA_11",
             "pn512_sclk": "PA_1",
             "pn512_ssel": "PA_15",
-            "pn512_irq": "A1",
-            "pn512_reset": "A0"
+            "pn512_irq": "ARDUINO_UNO_A1",
+            "pn512_reset": "ARDUINO_UNO_A0"
         }
     }
 }

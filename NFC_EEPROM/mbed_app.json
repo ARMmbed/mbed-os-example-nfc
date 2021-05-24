@@ -17,9 +17,9 @@
         },
         "NRF52840_DK": {
             "target.extra_labels_add": ["NT3H2111"],
-            "MBED_NFC_NT3H2111.sda": "D14",
-            "MBED_NFC_NT3H2111.scl": "D15",
-            "MBED_NFC_NT3H2111.fd": "D5"
+            "MBED_NFC_NT3H2111.sda": "ARDUINO_UNO_D14",
+            "MBED_NFC_NT3H2111.scl": "ARDUINO_UNO_D15",
+            "MBED_NFC_NT3H2111.fd": "ARDUINO_UNO_D5"
         }
     }
 }
